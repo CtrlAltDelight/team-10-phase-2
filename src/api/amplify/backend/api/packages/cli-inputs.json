@@ -22,13 +22,6 @@
         "setting": "open"
       }
     },
-    "/package/{id}/rate": {
-      "name": "/package/{id}/rate",
-      "lambdaFunction": "packagesLambda",
-      "permissions": {
-        "setting": "open"
-      }
-    },
     "/authenticate": {
       "name": "/authenticate",
       "lambdaFunction": "packagesLambda",
