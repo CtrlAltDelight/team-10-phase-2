@@ -1,0 +1,10 @@
+{
+  "resourceName": "PackagesTable",
+  "tableName": "PackagesTable",
+  "partitionKey": {
+    "fieldName": "PackageID",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}
