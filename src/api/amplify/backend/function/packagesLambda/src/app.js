@@ -52,76 +52,69 @@ app.use(function(req, res, next) {
 //   }
 // };
 
-exports.handler = async (event) => {
-    const route = event.routeKey; // routeKey contains the route
-    let response;
+app.use(express.json()); // Middleware to parse JSON bodies
 
-    switch(route) {
-        case '/packages':
-            response = await handlePackages(event);
-            break;
-        case '/package':
-            response = await handlePackage(event);
-            break;
-        case '/package/{id}':
-            response = await handlePackageById(event);
-            break;
-        case '/package/{id}/rate':
-            response = await handleRatePackage(event);
-            break;
-        case '/reset':
-            response = await handleReset(event);
-            break;
-        case '/authenticate':
-            response = await handleAuthenticate(event);
-            break;
-        case '/package/byName/{name}':
-            response = await handlePackageByName(event);
-            break;
-        case '/package/byRegex':
-            response = await handlePackageByRegex(event);
-            break;
-        default:
-            response = {
-                statusCode: 404,
-                body: JSON.stringify({ message: 'Route not found' })
-            };
-    }
+// POST /packages - Get the packages from the registry
+app.post('/packages', (req, res) => {
+    // Logic for handling PackagesList
+});
 
-    return response;
-};
+// DELETE /reset - Reset the registry
+app.delete('/reset', (req, res) => {
+    // Logic for handling RegistryReset
+});
 
-async function handlePackages(event) {
-    // Logic for handling '/packages' route
-}
+// GET /package/{id} - Interact with the package with this ID
+app.get('/package/:id', (req, res) => {
+    // Logic for handling PackageRetrieve
+});
 
-async function handlePackage(event) {
-    // Logic for handling '/package' route
-}
+// PUT /package/{id} - Update the content of the package
+app.put('/package/:id', (req, res) => {
+    // Logic for handling PackageUpdate
+});
 
-async function handlePackageById(event) {
-    // Logic for handling '/package/{id}' route
-}
+// DELETE /package/{id} - Delete this version of the package
+app.delete('/package/:id', (req, res) => {
+    // Logic for handling PackageDelete
+});
 
-async function handleRatePackage(event) {
-    // Logic for handling '/package/{id}/rate' route
-}
+// POST /package - Upload or Ingest a new package
+app.post('/package', (req, res) => {
+    // Logic for handling PackageCreate
+});
 
-async function handleReset(event) {
-    // Logic for handling '/reset' route
-}
+// GET /package/{id}/rate - Get ratings for this package
+app.get('/package/:id/rate', (req, res) => {
+    // Logic for handling PackageRate
+});
 
-async function handleAuthenticate(event) {
-    // Logic for handling '/authenticate' route
-}
+// PUT /authenticate - Create an access token
+app.put('/authenticate', (req, res) => {
+    // Logic for handling CreateAuthToken
+});
 
-async function handlePackageByName(event) {
-    // Logic for handling '/package/byName/{name}' route
-}
+// GET /package/byName/{name} - Return the history of this package
+app.get('/package/byName/:name', (req, res) => {
+    // Logic for handling PackageByNameGet
+});
 
-async function handlePackageByRegex(event) {
-    // Logic for handling '/package/byRegex' route
-}
+// DELETE /package/byName/{name} - Delete all versions of this package
+app.delete('/package/byName/:name', (req, res) => {
+    // Logic for handling PackageByNameDelete
+});
+
+// POST /package/byRegEx - Get any packages fitting the regular expression
+app.post('/package/byRegEx', (req, res) => {
+    // Logic for handling PackageByRegExGet
+});
+
+// Start the server
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
 
 // Additional helper functions or logic
 
@@ -302,4 +295,4 @@ async function handlePackageByRegex(event) {
 // // Export the app object. When executing the application local this does nothing. However,
 // // to port it to AWS Lambda we will create a wrapper around that will load the app from
 // // this file
-// module.exports = app;
+module.exports = app;
