@@ -13,6 +13,24 @@
       "lambdaFunction": "packagesLambda",
       "permissions": {
         "setting": "open"
+      },
+      "children": {
+        "/{id}": {
+          "name": "/{id}",
+          "lambdaFunction": "packagesLambda",
+          "permissions": {
+            "setting": "open"
+          },
+          "children": {
+            "/rate": {
+              "name": "/rate",
+              "lambdaFunction": "packagesLambda",
+              "permissions": {
+                "setting": "open"
+              }
+            },
+          }
+        }
       }
     },
     "/reset": {
