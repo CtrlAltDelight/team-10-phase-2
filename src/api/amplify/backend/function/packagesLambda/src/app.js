@@ -5,10 +5,10 @@ Licensed under the Apache License, Version 2.0 (the "License"). You may not use 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 */
-import AWS from 'aws-sdk';
-import awsServerlessExpressMiddleware from 'aws-serverless-express/middleware';
-import bodyParser from 'body-parser';
-import express from 'express';
+const AWS = require('aws-sdk');
+const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
+const bodyParser = require('body-parser');
+const express = require('express');
 
 AWS.config.update({ region: process.env.TABLE_REGION });
 
@@ -57,6 +57,12 @@ app.use(express.json()); // Middleware to parse JSON bodies
 // POST /packages - Get the packages from the registry
 app.post('/packages', (req, res) => {
     // Logic for handling PackagesList
+    let response = {
+        statusCode: 400,
+        body: JSON.stringify({ message: 'you made it' })
+    };
+
+    return response;
 });
 
 // DELETE /reset - Reset the registry
@@ -115,6 +121,7 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
+module.exports = app;
 
 // Additional helper functions or logic
 
@@ -295,4 +302,3 @@ app.listen(PORT, () => {
 // // Export the app object. When executing the application local this does nothing. However,
 // // to port it to AWS Lambda we will create a wrapper around that will load the app from
 // // this file
-module.exports = app;

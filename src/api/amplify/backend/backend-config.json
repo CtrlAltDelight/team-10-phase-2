@@ -1,5 +1,19 @@
 {
   "api": {
+    "packages": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "packagesLambda"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "t10v3": {
       "dependsOn": [],
       "output": {
@@ -20,20 +34,6 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "AppSync"
-    },
-    "packages": {
-      "service": "API Gateway",
-      "providerPlugin": "awscloudformation",
-      "dependsOn": [
-        {
-          "category": "function",
-          "resourceName": "packagesLambda",
-          "attributes": [
-            "Name",
-            "Arn"
-          ]
-        }
-      ]
     }
   },
   "auth": {
@@ -65,36 +65,54 @@
       "service": "Cognito"
     }
   },
-  "storage": {
-    "s3t10v3packages": {
-      "dependsOn": [],
-      "providerPlugin": "awscloudformation",
-      "service": "S3"
-    },
-    "PackagesTable": {
-      "service": "DynamoDB",
-      "providerPlugin": "awscloudformation"
-    }
-  },
   "function": {
     "packagesLambda": {
       "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda",
       "dependsOn": [
         {
-          "category": "storage",
-          "resourceName": "PackagesTable",
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
           "attributes": [
             "Name",
             "Arn"
           ],
-          "attributeEnvMap": {
-            "Name": "TABLE_NAME",
-            "Arn": "TABLE_ARN"
-          }
+          "category": "storage",
+          "resourceName": "PackagesTable"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_packagesLambda_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "packagesLambda"
         }
       ]
+    },
+    "AMPLIFY_function_packagesLambda_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "packagesLambda"
+        }
+      ]
+    }
+  },
+  "storage": {
+    "PackagesTable": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "s3t10v3packages": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3"
     }
   }
 }
