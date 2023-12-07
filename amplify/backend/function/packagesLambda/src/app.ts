@@ -140,26 +140,36 @@ app.post('/package', async (req: any, res: any) => {
           const packageVersion = parsedPackageJSON.version;
           console.log(packageVersion);
 
-          const s3Key = `${packageName}/${packageVersion}.zip`;
+          const s3Key = `${packageName}-${packageVersion}.zip`;
 
           const params = {
-              Bucket: 'amplify-t10v3-staging-22058-deployment',
+              Bucket: 't10-v3-packages22058-staging',
               Key: s3Key,
               Body: body
           };
 
-          s3.upload(params, (err: any, data: any) => {
-              if (err) {
-                  console.log(err);
-                  res.status(500).json({ message: 'Error uploading to S3' });
-              }
-              else {
-                  console.log(data);
-                  res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': data.Key },
+          try {
+            await s3.putObject(params).promise();
+            console.log('File uploaded successfully.');
+            res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
                                         'data': {'content': body} });
-              }
+          } catch (err) {
+            console.error('Error uploading file:', err);
+            res.status(500).json({ message: 'Error uploading to S3' });
           }
-          );
+
+          // s3.upload(params, (err: any, data: any) => {
+          //     if (err) {
+          //         console.log(err);
+          //         res.status(500).json({ message: 'Error uploading to S3' });
+          //     }
+          //     else {
+          //         console.log(data);
+          //         res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': data.Key },
+          //                               'data': {'content': body} });
+          //     }
+          // }
+          // );
 
       }
     }
