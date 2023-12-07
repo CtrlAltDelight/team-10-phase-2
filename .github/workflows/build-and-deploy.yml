@@ -16,6 +16,9 @@ jobs:
       with:
         node-version: '18'  # Set to your Node.js version
 
+    - name: Install Amplify CLI
+      run: npm install -g @aws-amplify/cli
+
     - name: Install Dependencies
       run: npm install
 
