@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import logger from './run'
+import logger from './run';
 import { graphql, GraphQlQueryResponseData } from '@octokit/graphql';
 import { findGitHubRepoUrl } from './license_ramp_up_metric';
 import fetch, { Response } from 'node-fetch';
@@ -54,7 +54,7 @@ export async function calcBusFactor(owner: string, repo: string): Promise<number
     return 0;
   }
 
-  let contributors = await response.json();
+  const contributors = await response.json();
   let busFactor = 0;
   // Calculate impact for each contributor
   contributors.forEach((contributor: any) => {
@@ -63,7 +63,7 @@ export async function calcBusFactor(owner: string, repo: string): Promise<number
     impact += 0.6 * Math.min(contributor.contributions / 20, 1);
 
     // make API call to get number of pull requests created by contributor
-    let prQueryUrl = `https://api.github.com/search/issues?q=author:${contributor.login}+type:pr+repo:${owner}/${repo}`;
+    const prQueryUrl = `https://api.github.com/search/issues?q=author:${contributor.login}+type:pr+repo:${owner}/${repo}`;
     fetchResponse(prQueryUrl).then((response) => {
       if (response !== null) {
         response.json().then((data) => {
@@ -110,8 +110,8 @@ export async function calcResponsiveMaintainer(owner: string, repo: string): Pro
   }
 
   const header = response.headers.get('link');
-  var matchResult; 
-  var lastPage; 
+  let matchResult; 
+  let lastPage; 
   if(header) {
     matchResult = header.match(/page=(\d+)>; rel="last"/);
     if(matchResult){
@@ -160,7 +160,7 @@ export async function calcResponsiveMaintainer(owner: string, repo: string): Pro
 
 /* Added by Luke */
 // Additional imports if needed
-import { Octokit } from "@octokit/rest"; // Added this to ./run install script
+// import { Octokit } from '@octokit/rest'; // Added this to ./run install script
 interface FileContentResponse {
     type: string;
     encoding?: string;
@@ -171,125 +171,125 @@ interface FileContentResponse {
 }
 // Fetch package.json from the GitHub repository
 async function fetchPackageJson(owner: string, repo: string): Promise<any> {
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    try {
-        const response = await octokit.repos.getContent({
-            owner: owner,
-            repo: repo,
-            path: 'package.json',
-        });
-        // Check if the response data is of the expected type
-        const data = response.data as FileContentResponse;
-        if ('type' in data && data.type === 'file' && 'content' in data) {
-          const content = Buffer.from(data.content, 'base64').toString();
-          return JSON.parse(content);
-        }
-    } catch (error) {
-        logger.log({'level': 'error', 'message': `Error fetching package.json: ${error}`});
-        return null;
-    }
+    // const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+    // try {
+    //     // const response = await octokit.repos.getContent({
+    //     //     owner: owner,
+    //     //     repo: repo,
+    //     //     path: 'package.json',
+    //     // });
+    //     // // Check if the response data is of the expected type
+    //     // const data = response.data as FileContentResponse;
+    //     // if ('type' in data && data.type === 'file' && 'content' in data) {
+    //       // const content = Buffer.from(data.content, 'base64').toString();
+    //       // return JSON.parse(content);
+    //     }
+    // } catch (error) {
+    //     logger.log({'level': 'error', 'message': `Error fetching package.json: ${error}`});
+    //     return null;
+    // }
 }
 
 // Calculate the dependencies metric
-async function calcDependenciesMetric(owner: string, repo: string): Promise<number> {
-    const packageJson = await fetchPackageJson(owner, repo);
-    if (!packageJson) return 0; // Return 0 if package.json is not found
+async function calcDependenciesMetric(owner: string, repo: string): Promise<void> {
+    // const packageJson = await fetchPackageJson(owner, repo);
+    // if (!packageJson) return 0; // Return 0 if package.json is not found
 
-    const dependencies = {...packageJson.dependencies, ...packageJson.devDependencies};
-    if (Object.keys(dependencies).length === 0) return 1.0; // Return 1.0 if no dependencies
+    // const dependencies = {...packageJson.dependencies, ...packageJson.devDependencies};
+    // if (Object.keys(dependencies).length === 0) return 1.0; // Return 1.0 if no dependencies
 
-    let pinnedDependencies = 0;
-    Object.values(dependencies).forEach((version: string) => {
-        if (version.match(/^\d+\.\d+\./)) { // Regex to check if version is pinned to major.minor
-            pinnedDependencies++;
-        }
-    });
+    // let pinnedDependencies = 0;
+    // Object.values(dependencies).forEach((version: string) => {
+    //     if (version.match(/^\d+\.\d+\./)) { // Regex to check if version is pinned to major.minor
+    //         pinnedDependencies++;
+    //     }
+    // });
 
-    return pinnedDependencies / Object.keys(dependencies).length;
+    // return pinnedDependencies / Object.keys(dependencies).length;
 }
 
 // Function to fetch pull requests from the GitHub repository
-async function fetchPullRequests(owner: string, repo: string, octokit: Octokit): Promise<any[]> {
-    try {
-        const prs = await octokit.paginate(octokit.pulls.list, {
-            owner: owner,
-            repo: repo,
-            state: 'closed',  // considering only merged/closed PRs
-            per_page: 100
-        });
-        return prs;
-    } catch (error) {
-        logger.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
-        return [];
-    }
-}
+// async function fetchPullRequests(owner: string, repo: string, octokit: Octokit): Promise<any[]> {
+//     try {
+//         const prs = await octokit.paginate(octokit.pulls.list, {
+//             owner: owner,
+//             repo: repo,
+//             state: 'closed',  // considering only merged/closed PRs
+//             per_page: 100
+//         });
+//         return prs;
+//     } catch (error) {
+//         logger.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
+//         return [];
+//     }
+// }
 
-// Function to calculate the codeReview metric
-async function calcCodeReviewMetric(owner: string, repo: string): Promise<number> {
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    let pullRequests;
+// // Function to calculate the codeReview metric
+// async function calcCodeReviewMetric(owner: string, repo: string): Promise<number> {
+//     const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+//     let pullRequests;
 
-    try { // Getting all pull requests
-        pullRequests = await fetchPullRequests(owner, repo, octokit);
-    } catch (error) {
-        logger.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
-        return 0;
-    }
+//     try { // Getting all pull requests
+//         pullRequests = await fetchPullRequests(owner, repo, octokit);
+//     } catch (error) {
+//         logger.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
+//         return 0;
+//     }
 
-    if (!pullRequests || pullRequests.length === 0) {
-        logger.log({'level': 'info', 'message': 'No pull requests found or error in fetching.'});
-        return 0;
-    }
+//     if (!pullRequests || pullRequests.length === 0) {
+//         logger.log({'level': 'info', 'message': 'No pull requests found or error in fetching.'});
+//         return 0;
+//     }
 
-    const prData = pullRequests.map(pr => ({
-        number: pr.number,
-        additions: pr.additions,
-        deletions: pr.deletions
-    }));
+//     const prData = pullRequests.map(pr => ({
+//         number: pr.number,
+//         additions: pr.additions,
+//         deletions: pr.deletions
+//     }));
 
-    let totalCodeChanges = 0;
-    let reviewedCodeChanges = 0;
+//     let totalCodeChanges = 0;
+//     let reviewedCodeChanges = 0;
 
-    for (const pr of prData) {
-        try {
-            const reviews = await octokit.pulls.listReviews({
-                owner: owner,
-                repo: repo,
-                pull_number: pr.number
-            });
+//     for (const pr of prData) {
+//         try {
+//             const reviews = await octokit.pulls.listReviews({
+//                 owner: owner,
+//                 repo: repo,
+//                 pull_number: pr.number
+//             });
 
-            const info = await octokit.pulls.get({
-                owner: owner,
-                repo: repo,
-                pull_number: pr.number
-            })
+//             const info = await octokit.pulls.get({
+//                 owner: owner,
+//                 repo: repo,
+//                 pull_number: pr.number
+//             })
 
-            totalCodeChanges += info.data.additions + info.data.deletions;
+//             totalCodeChanges += info.data.additions + info.data.deletions;
 
-            if (reviews.data.length > 0) {
-                reviewedCodeChanges += info.data.additions + info.data.deletions;
-            }
-        } catch (error) {
-            logger.log({'level': 'error', 'message': `Error processing PR #${pr.number}: ${error}`});
-        }
-    }
+//             if (reviews.data.length > 0) {
+//                 reviewedCodeChanges += info.data.additions + info.data.deletions;
+//             }
+//         } catch (error) {
+//             logger.log({'level': 'error', 'message': `Error processing PR #${pr.number}: ${error}`});
+//         }
+//     }
 
-    if (totalCodeChanges === 0) {
-        logger.log({'level': 'info', 'message': 'Total code changes are zero.'});
-        return 0; // Avoid division by zero
-    }
+//     if (totalCodeChanges === 0) {
+//         logger.log({'level': 'info', 'message': 'Total code changes are zero.'});
+//         return 0; // Avoid division by zero
+//     }
 
-    return reviewedCodeChanges / totalCodeChanges;
-}
-/* End added by Luke */
+//     return reviewedCodeChanges / totalCodeChanges;
+// }
+// /* End added by Luke */
 
 
 export async function bus_factor_maintainer_metric(repoURL: string) : Promise<number[]> {
 	// Metrics to be calculated
 	let bus_factor: number = 0;
 	let responsive_maintainer: number = 0;
-    let dependencies: number = 0; // Added by Luke
-    let code_review: number = 0; // Added by Luke
+    const dependencies: number = 0; // Added by Luke
+    const code_review: number = 0; // Added by Luke
 
 	// Check whether the URL is GitHub or NPMJS URL
 	let url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
@@ -299,7 +299,7 @@ export async function bus_factor_maintainer_metric(repoURL: string) : Promise<nu
 		// Find the GitHub URL for the package
 		repoURL = await findGitHubRepoUrl(sections[2]);
 		if (repoURL === 'none') {
-			logger.log({'level': 'error', 'message': `This npmjs package is not stored in a GitHub repository.`});
+			logger.log({'level': 'error', 'message': 'This npmjs package is not stored in a GitHub repository.'});
 			return [0, 0];
 		}
     // Get owner and repo from GitHub URL
@@ -324,10 +324,10 @@ export async function bus_factor_maintainer_metric(repoURL: string) : Promise<nu
   responsive_maintainer = await calcResponsiveMaintainer(sections[1], sections[2]);
 
   // Calculate dependencies metric Added by Luke.
-    dependencies = await calcDependenciesMetric(sections[1], sections[2]);
+    // dependencies = await calcDependenciesMetric(sections[1], sections[2]);
 
     // Calculate code review metric. Added by Luke.
-    code_review = await calcCodeReviewMetric(sections[1], sections[2]);
+    // code_review = await calcCodeReviewMetric(sections[1], sections[2]);
 
 	return [bus_factor, responsive_maintainer, dependencies, code_review]; // Modified by Luke.
 }

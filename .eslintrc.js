@@ -28,10 +28,9 @@ module.exports = {
 		'@typescript-eslint'
 	],
 	'rules': {
-		'indent': [
-			'error',
-			'tab'
-		],
+		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-var-requires': 'off',
+		'@typescript-eslint/no-unused-vars': 'off',
 		'linebreak-style': [
 			'error',
 			'unix'

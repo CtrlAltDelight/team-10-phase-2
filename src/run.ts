@@ -19,8 +19,8 @@ export async function processUrls(urlFile: string) {
     //console.log(urls);
     let l_r_metric_array: number[]; //[0] = License Score, [1] = Ramp Up Score, [2] = Correctness Score
     let bf_rm_metric_array: number[]; //[0] = Bus Factor Score, [1] = Responsive Maintainer Score
-    var number = 0;
-    var net_score = 0;
+    // let number = 0;
+    let net_score = 0;
     for(const url of urls) {
       logger.log({'level': 'info', 'message': `The URL that is currently running is ${url}`});
       l_r_metric_array = await license_ramp_up_metric(url); //returns license metric first and then ramp up metric
@@ -56,7 +56,7 @@ export function runTests(file: string) {
 
   for (const line of lines) {
     if (line.includes('Tests: ')) {
-      var match = line.match(/(\d+) passed/);
+      let match = line.match(/(\d+) passed/);
       if(match) {
         passedTests = parseInt(match[1]);
       }
@@ -74,7 +74,7 @@ export function runTests(file: string) {
   }
   const coverageText = `${coveragePercentage.toFixed(0)}%`;
   console.log(`${passedTests}/${totalTests} test cases passed. ${coverageText} line coverage achieved.`)
-  logger.log({'level': 'info', 'message': `Running tests...`});
+  logger.log({'level': 'info', 'message': 'Running tests...'});
 }
 
 // Main CLI

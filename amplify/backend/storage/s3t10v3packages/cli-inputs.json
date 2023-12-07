@@ -1,0 +1,12 @@
+{
+  "resourceName": "s3t10v3packages",
+  "bucketName": "t10-v3-packages",
+  "policyUUID": "a3b179af",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "READ",
+    "CREATE_AND_UPDATE",
+    "DELETE"
+  ]
+}

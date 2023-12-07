@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import logger from './run'
+import logger from './run';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import git from 'isomorphic-git'; 
@@ -129,9 +129,9 @@ export async function calculate_correctness_metric(filepath: string): Promise<nu
 export async function license_ramp_up_metric(repoURL: string): Promise<number[]> {
     const tempDir = tmp.dirSync(); //makes a temporary directory
     const repoDir = tempDir.name; 
-    var license_met = 0;
-    var ramp_up_met = 0;  
-    var correctness_met = 0; 
+    let license_met = 0;
+    let ramp_up_met = 0;  
+    let correctness_met = 0; 
     //looks into tmpdir to make a temporay directory and then deleting at the end of the function 
     //console.log(repoDir);
     fse.ensureDir(repoDir); //will make sure the directory exists or will create a new one
@@ -156,8 +156,8 @@ export async function license_ramp_up_metric(repoURL: string): Promise<number[]>
     await cloneRepository(repoURL, repoDir); //clones the repository
 
     //Reads in the cloned repository
-    var readmePath = `${repoDir}/Readme.md`; 
-    var readmeContent = 'none';
+    let readmePath = `${repoDir}/Readme.md`; 
+    let readmeContent = 'none';
     if(fs.existsSync(readmePath)) {
       readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
     } else {

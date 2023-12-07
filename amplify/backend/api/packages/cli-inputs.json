@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "paths": {
+    "/packages": {
+      "name": "/packages",
+      "lambdaFunction": "packagesLambda",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/package": {
+      "name": "/package",
+      "lambdaFunction": "packagesLambda",
+      "permissions": {
+        "setting": "open"
+      },
+      "children": {
+        "/{id}": {
+          "name": "/{id}",
+          "lambdaFunction": "packagesLambda",
+          "permissions": {
+            "setting": "open"
+          },
+          "children": {
+            "/rate": {
+              "name": "/rate",
+              "lambdaFunction": "packagesLambda",
+              "permissions": {
+                "setting": "open"
+              }
+            },
+          }
+        }
+      }
+    },
+    "/reset": {
+      "name": "/reset",
+      "lambdaFunction": "packagesLambda",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/authenticate": {
+      "name": "/authenticate",
+      "lambdaFunction": "packagesLambda",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/package/byName/{name}": {
+      "name": "/package/byName/{name}",
+      "lambdaFunction": "packagesLambda",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/package/byRegex": {
+      "name": "/package/byRegex",
+      "lambdaFunction": "packagesLambda",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

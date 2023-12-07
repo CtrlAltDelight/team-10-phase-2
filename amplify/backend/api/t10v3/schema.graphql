@@ -1,0 +1,81 @@
+type PackageStore @model @auth(rules: [{allow: private}]) {
+  Name: String! @primaryKey
+  Version: String! 
+  ReadMe: String!
+  S3source: String!
+  S3log: String!
+}
+
+type PackageMetadata {
+  Name: PackageName! 
+  Version: String!
+  ID: PackageID! 
+}
+
+type PackageData {
+  Content: String
+  URL: String
+  JSProgram: String
+}
+
+type User {
+  name: String!
+  isAdmin: Boolean!
+}
+
+type UserAuthenticationInfo {
+  password: String! 
+}
+
+type PackageID {
+  value: String!
+}
+
+type PackageRating {
+  BusFactor: Float!
+  Correctness: Float!
+  RampUp: Float!
+  ResponsiveMaintainer: Float!
+  LicenseScore: Float!
+  GoodPinningPractice: Float!
+  PullRequest: Float!
+  NetScore: Float!
+}
+
+type PackageHistoryEntry {
+  User: User!
+  Date: String!
+  PackageMetadata: PackageMetadata!
+  Action: String!
+}
+
+type PackageName {
+  value: String!
+}
+
+type AuthenticationToken {
+  value: String!
+}
+
+type AuthenticationRequest {
+  User: User!
+  Secret: UserAuthenticationInfo!
+}
+
+type SemverRange {
+  value: String!
+}
+
+type PackageQuery {
+  Version: SemverRange
+  Name: PackageName!
+}
+
+type EnumerateOffset {
+  value: String!
+}
+
+type PackageRegEx {
+  RegEx: String!
+}
+ 
