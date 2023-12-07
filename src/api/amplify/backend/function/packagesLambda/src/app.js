@@ -127,7 +127,7 @@ app.post('/package', async (req, res) => {
           console.log(body);
 
           console.log('FINDING PACKAGE JSON');
-          const packageJSON = findPackageJSON(body);
+          const packageJSON = await findPackageJSON(body);
           if (!packageJSON) {
             res.status(500).json({ message: 'Error finding package.json in zip file' });
           }
@@ -169,21 +169,27 @@ app.post('/package', async (req, res) => {
 });
 
 // Helper function to find the package.json file in the zip file
-function findPackageJSON(body) {
+async function findPackageJSON(body) {
     const zip = new JSZip();
-    zip.loadAsync(body).then(function (zip) {
-        zip.forEach(function (relativePath, zipEntry) {
-            console.log('relativePath');
-            console.log(relativePath);
-            if (relativePath.split('/')[1] === 'package.json') {
-                const packageInfo = zip.file(relativePath).async('text');
-                console.log('packageInfo');
-                console.log(packageInfo);
-                return packageInfo;
-            }
-        });
-    });
+    const loadedZip = await zip.loadAsync(body);
+    
+    for (const relativePath in loadedZip.files) {
+        console.log('relativePath=', relativePath);
+        const pathParts = relativePath.split('/');
+        console.log('pathParts[1]=', pathParts[1]);
+
+        if (pathParts.length == 2 && pathParts[1] === 'package.json') {
+            console.log('I GOT HERE');
+            const packageInfo = await loadedZip.file(relativePath).async('text');
+            console.log('packageInfo');
+            console.log(packageInfo);
+            return packageInfo;
+        }
+    }
+
+    throw new Error('package.json not found');
 }
+
 
 // GET /package/{id}/rate - Get ratings for this package
 app.get('/package/:id/rate', (req, res) => {
@@ -217,4 +223,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-

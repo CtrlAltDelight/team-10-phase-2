@@ -57,6 +57,7 @@
     "breakCircularDependency": true,
     "dependsOn": [],
     "hostedUI": false,
-    "authProviders": []
+    "authProviders": [],
+    "AuthCognitoUserPoolId": "us-east-2_J0NdpK2zI"
   }
 }
