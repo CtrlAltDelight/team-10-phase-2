@@ -22,6 +22,9 @@ jobs:
     - name: Configure Amplify
       run: amplify configure  # This step might require some interactive setup
 
+    - name: Amplify pull
+      run: amplify pull --appId d2stg16t5slf01 --envName staging
+
     - name: Install Dependencies
       run: npm install
 
