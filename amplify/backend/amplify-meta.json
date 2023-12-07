@@ -1,0 +1,188 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-t10v3-staging-22058-authRole",
+      "UnauthRoleArn": "arn:aws:iam::438910190955:role/amplify-t10v3-staging-22058-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::438910190955:role/amplify-t10v3-staging-22058-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-t10v3-staging-22058-deployment",
+      "UnauthRoleName": "amplify-t10v3-staging-22058-unauthRole",
+      "StackName": "amplify-t10v3-staging-22058",
+      "StackId": "arn:aws:cloudformation:us-east-2:438910190955:stack/amplify-t10v3-staging-22058/c3369200-924b-11ee-bc03-06a723757323",
+      "AmplifyAppId": "d2stg16t5slf01"
+    }
+  },
+  "api": {
+    "packages": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "packagesLambda"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway",
+      "output": {
+        "ApiName": "packages",
+        "RootUrl": "https://s9w5fyhoi9.execute-api.us-east-2.amazonaws.com/staging",
+        "ApiId": "s9w5fyhoi9"
+      },
+      "lastPushTimeStamp": "2023-12-07T20:53:06.224Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/api/packages-cloudformation-template.json",
+        "logicalId": "apipackages"
+      }
+    },
+    "t10v3": {
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [
+            {
+              "authenticationType": "AWS_IAM"
+            },
+            {
+              "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+              "userPoolConfig": {
+                "userPoolId": "autht10v3"
+              }
+            }
+          ],
+          "defaultAuthentication": {
+            "apiKeyConfig": {
+              "apiKeyExpirationDays": 30,
+              "description": "api key description"
+            },
+            "authenticationType": "API_KEY"
+          }
+        },
+        "GraphQLAPIIdOutput": "wdm2u54hbbck7pjzczxgodgqpq",
+        "GraphQLAPIEndpointOutput": "https://zqj6njarwzgu3eatrlevskiovy.appsync-api.us-east-2.amazonaws.com/graphql",
+        "GraphQLAPIKeyOutput": "da2-tmbflswnxnfczhexjgblhujfqq"
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync",
+      "lastPushTimeStamp": "2023-12-07T20:53:06.227Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "logicalId": "apit10v3"
+      }
+    }
+  },
+  "auth": {
+    "t10v3": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "output": {
+        "UserPoolId": "us-east-2_J0NdpK2zI",
+        "AppClientIDWeb": "5bo2j0pobb8fpcpkps10inko04",
+        "AppClientID": "6ulflr6ji4crckmjuu376a0ph1",
+        "IdentityPoolId": "us-east-2:c00620fd-9769-4f2c-a5b5-6046b4c6bde1",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-2:438910190955:userpool/us-east-2_J0NdpK2zI",
+        "IdentityPoolName": "testAuthIdentityPool__staging",
+        "UserPoolName": "t10v3"
+      },
+      "lastPushTimeStamp": "2023-12-07T20:53:06.230Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/auth/t10v3-cloudformation-template.json",
+        "logicalId": "autht10v3"
+      }
+    }
+  },
+  "function": {
+    "packagesLambda": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "PackagesTable"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::438910190955:role/t10v3LambdaRole302b6ddf-staging",
+        "Region": "us-east-2",
+        "Arn": "arn:aws:lambda:us-east-2:438910190955:function:packagesLambda-staging",
+        "Name": "packagesLambda-staging",
+        "LambdaExecutionRole": "t10v3LambdaRole302b6ddf-staging"
+      },
+      "lastPushTimeStamp": "2023-12-07T20:53:06.232Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/function/packagesLambda-cloudformation-template.json",
+        "logicalId": "functionpackagesLambda"
+      },
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-t10v3-staging-22058-deployment",
+        "s3Key": "amplify-builds/packagesLambda-795463717976532f625a-build.zip"
+      }
+    }
+  },
+  "storage": {
+    "PackagesTable": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB",
+      "output": {
+        "PartitionKeyName": "PackageID",
+        "Region": "us-east-2",
+        "Arn": "arn:aws:dynamodb:us-east-2:438910190955:table/PackagesTable-staging",
+        "StreamArn": "arn:aws:dynamodb:us-east-2:438910190955:table/PackagesTable-staging/stream/2023-12-04T18:11:26.655",
+        "PartitionKeyType": "S",
+        "Name": "PackagesTable-staging"
+      },
+      "lastPushTimeStamp": "2023-12-07T20:53:06.234Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/storage/PackagesTable-cloudformation-template.json",
+        "logicalId": "storagePackagesTable"
+      }
+    },
+    "s3t10v3packages": {
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "S3",
+      "output": {
+        "BucketName": "t10-v3-packages22058-staging",
+        "Region": "us-east-2"
+      },
+      "lastPushTimeStamp": "2023-12-07T20:53:08.021Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storages3t10v3packages"
+      }
+    }
+  }
+}
