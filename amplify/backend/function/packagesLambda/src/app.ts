@@ -154,7 +154,7 @@ app.post('/package', async (req: any, res: any) => {
             console.log('File already exists in S3');
             res.status(409).json({ message: 'Package exists already' });
           }
-          catch(err) {
+          catch(err) { // If the object does not exist in S3, upload it
             try {
               await s3.putObject(params).promise();
               console.log('File uploaded successfully.');
@@ -165,22 +165,6 @@ app.post('/package', async (req: any, res: any) => {
               res.status(500).json({ message: 'Error uploading to S3' });
             }
           }
-
-          
-
-          // s3.upload(params, (err: any, data: any) => {
-          //     if (err) {
-          //         console.log(err);
-          //         res.status(500).json({ message: 'Error uploading to S3' });
-          //     }
-          //     else {
-          //         console.log(data);
-          //         res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': data.Key },
-          //                               'data': {'content': body} });
-          //     }
-          // }
-          // );
-
       }
     }
     else {
