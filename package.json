@@ -25,6 +25,7 @@
   "scripts": {
     "build": "tsc",
     "build-all": "tsc && cd amplify/backend/function/packagesLambda/src && tsc && cd ../../../../..",
+    "build-all-deploy": "tsc && cd amplify/backend/function/packagesLambda/src && tsc && cd ../../../../.. && amplify push --yes",
     "test": "jest",
     "coverage": "nyc --reporter=html --reporter=text-summary --reporter=lcov jest",
     "lint": "eslint . --ext .ts",

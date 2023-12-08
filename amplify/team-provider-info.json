@@ -18,7 +18,7 @@
       "function": {
         "packagesLambda": {
           "deploymentBucketName": "amplify-t10v3-staging-22058-deployment",
-          "s3Key": "amplify-builds/packagesLambda-5a734f61577776785076-build.zip"
+          "s3Key": "amplify-builds/packagesLambda-6d54637777685a617235-build.zip"
         }
       },
       "storage": {

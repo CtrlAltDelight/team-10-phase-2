@@ -137,15 +137,23 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 Key: s3Key,
                 Body: body
             };
+            // Check if the object already exists in S3
             try {
-                yield s3.putObject(params).promise();
-                console.log('File uploaded successfully.');
-                res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
-                    'data': { 'content': body } });
+                yield s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
+                console.log('File already exists in S3');
+                res.status(409).json({ message: 'Package exists already' });
             }
             catch (err) {
-                console.error('Error uploading file:', err);
-                res.status(500).json({ message: 'Error uploading to S3' });
+                try {
+                    yield s3.putObject(params).promise();
+                    console.log('File uploaded successfully.');
+                    res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
+                        'data': { 'content': body } });
+                }
+                catch (err) {
+                    console.error('Error uploading file:', err);
+                    res.status(500).json({ message: 'Error uploading to S3' });
+                }
             }
             // s3.upload(params, (err: any, data: any) => {
             //     if (err) {
