@@ -92,6 +92,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(400).json({ message: 'There is missing field(s) in the PackageData/AuthenticationToken \
                                           or it is formed improperly (e.g. Content and URL are both set), or\
                                            the AuthenticationToken is invalid.' });
+        return;
     }
     if (URL) {
         // If URL is set, download the file from the URL and store it in S3
@@ -113,6 +114,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             catch (_a) {
                 console.log(error);
                 res.status(500).json({ message: 'Error downloading from URL' });
+                return;
             }
         }
         if (response) {
@@ -123,6 +125,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             const packageJSON = yield findPackageJSON(body);
             if (!packageJSON) {
                 res.status(500).json({ message: 'Error finding package.json in zip file' });
+                return;
             }
             console.log(packageJSON);
             const parsedPackageJSON = JSON.parse(packageJSON);
@@ -142,6 +145,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 yield s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
                 console.log('File already exists in S3');
                 res.status(409).json({ message: 'Package exists already' });
+                return;
             }
             catch (err) { // If the object does not exist in S3, upload it
                 try {
@@ -161,10 +165,12 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
                     console.log('File uploaded successfully.');
                     res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
                         'data': { 'content': body } });
+                    return;
                 }
                 catch (err) {
                     console.error('Error uploading file:', err);
                     res.status(500).json({ message: 'Error uploading to S3 or dynamoDB' });
+                    return;
                 }
             }
         }
@@ -172,6 +178,63 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     else {
         // If URL is not set, create a new Package object in DynamoDB with the content
         // Then, return the PackageID
+        // Extract the package name and version from the package.json file
+        // Content is a base64 encoded string
+        const body = Buffer.from(content, 'base64');
+        console.log('BODY');
+        console.log(body);
+        console.log('FINDING PACKAGE JSON');
+        const packageJSON = yield findPackageJSON(body);
+        if (!packageJSON) {
+            res.status(500).json({ message: 'Error finding package.json in zip file' });
+            return;
+        }
+        console.log(packageJSON);
+        const parsedPackageJSON = JSON.parse(packageJSON);
+        console.log(parsedPackageJSON);
+        const packageName = parsedPackageJSON.name;
+        console.log(packageName);
+        const packageVersion = parsedPackageJSON.version;
+        console.log(packageVersion);
+        const s3Key = `${packageName}-${packageVersion}.zip`;
+        const params = {
+            Bucket: 't10-v3-packages22058-staging',
+            Key: s3Key,
+            Body: body
+        };
+        // Check if the object already exists in S3
+        try {
+            yield s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
+            console.log('File already exists in S3');
+            res.status(409).json({ message: 'Package exists already' });
+            return;
+        }
+        catch (err) { // If the object does not exist in S3, upload it
+            try {
+                // Upload the file to S3
+                yield s3.putObject(params).promise();
+                // Upload Name, Version, and ID to DynamoDB
+                const packageParams = {
+                    TableName: tableName,
+                    Item: {
+                        'PackageID': s3Key,
+                        'Name': packageName,
+                        'Version': packageVersion,
+                        'Score': 0,
+                    }
+                };
+                yield dynamodb.put(packageParams).promise();
+                console.log('File uploaded successfully.');
+                res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
+                    'data': { 'content': body } });
+                return;
+            }
+            catch (err) {
+                console.error('Error uploading file:', err);
+                res.status(500).json({ message: 'Error uploading to S3 or dynamoDB' });
+                return;
+            }
+        }
     }
 }));
 // Helper function to find the package.json file in the zip file
