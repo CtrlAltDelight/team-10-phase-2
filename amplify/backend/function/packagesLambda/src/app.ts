@@ -18,10 +18,10 @@ AWS.config.update({ region: process.env.TABLE_REGION });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const s3 = new AWS.S3();
 
-let tableName = 'PackagesTable';
-if (process.env.ENV && process.env.ENV !== 'NONE') {
-  tableName = tableName + '-' + process.env.ENV;
-}
+const tableName = 'PackagesTable-staging';
+// if (process.env.ENV && process.env.ENV !== 'NONE') {
+//   tableName = tableName + '-' + process.env.ENV;
+// }
 
 // const userIdPresent = false; // TODO: update in case is required to use that definition
 // const partitionKeyName = 'PackageID';
@@ -156,13 +156,27 @@ app.post('/package', async (req: any, res: any) => {
           }
           catch(err) { // If the object does not exist in S3, upload it
             try {
+              // Upload the file to S3
               await s3.putObject(params).promise();
+              // Upload Name, Version, and ID to DynamoDB
+              const packageParams = {
+                TableName: tableName,
+                Item: {
+                  'PackageID': s3Key,
+                  'Name': packageName,
+                  'Version': packageVersion,
+                  'Score': 0,
+                }
+              };
+
+              await dynamodb.put(packageParams).promise();
+
               console.log('File uploaded successfully.');
               res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
                                         'data': {'content': body} });
             } catch (err) {
               console.error('Error uploading file:', err);
-              res.status(500).json({ message: 'Error uploading to S3' });
+              res.status(500).json({ message: 'Error uploading to S3 or dynamoDB' });
             }
           }
       }
