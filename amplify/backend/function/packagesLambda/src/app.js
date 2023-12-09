@@ -441,9 +441,40 @@ async function findPackageJSON(body) {
 //     // Logic for handling PackageByNameDelete
 // });
 // POST /package/byRegEx - Get any packages fitting the regular expression
-// app.post('/package/byRegEx', (req, res) => {
-//     // Logic for handling PackageByRegExGet
-// });
+app.post('/package/byRegEx', (req, res) => {
+    // Logic for handling PackageByRegExGet
+    const body = req.body;
+    const regex = body.RegEx;
+    // Search Packages in DynamoDB by input regular expression
+    const params = {
+        TableName: tableName,
+    };
+    dynamodb.scan(params, (err, data) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Error retrieving packages from DynamoDB' });
+            return;
+        }
+        else {
+            console.log(data);
+            if (data.Items.length == 0) {
+                res.status(404).json({ message: 'No packages found' });
+                return;
+            }
+            else {
+                const searchResults = [];
+                for (let i = 0; i < data.Items.length; i++) {
+                    const item = data.Items[i];
+                    if (item.Name.match(regex)) {
+                        searchResults.push({ 'Version': item.Version, 'Name': item.Name });
+                    }
+                }
+                res.status(200).json(searchResults);
+                return;
+            }
+        }
+    });
+});
 // Start the server
 const PORT = 3000;
 app.listen(PORT, () => {
