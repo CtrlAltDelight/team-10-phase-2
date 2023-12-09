@@ -253,10 +253,6 @@ app.put('/package/:id', (req, res) => {
             console.log(data);
             if (data.Item) {
                 const s3Key = `${data.Item.Name}-${data.Item.Version}.zip`;
-                const s3Params = {
-                    Bucket: s3BucketName,
-                    Key: s3Key,
-                };
                 // Update the package in dynamoDB and s3
                 if (URL) {
                     const zipUrl = `${URL}/archive/main.zip`;
@@ -301,7 +297,7 @@ app.put('/package/:id', (req, res) => {
                         }
                         else {
                             console.log(data);
-                            res.status(200).json({ message: 'Package is updated' });
+                            res.status(200).json({ message: 'Version is updated.' });
                         }
                     });
                     // Update S3 with the new content
@@ -331,6 +327,37 @@ app.put('/package/:id', (req, res) => {
                         Key: s3Key,
                         Body: content
                     };
+                    const packageJSON = await findPackageJSON(body);
+                    if (!packageJSON) {
+                        res.status(500).json({ message: 'Error finding package.json in zip file' });
+                        return;
+                    }
+                    console.log(packageJSON);
+                    const parsedPackageJSON = JSON.parse(packageJSON);
+                    const packageURL = parsedPackageJSON.repository.url;
+                    // Update URL in dynamoDB
+                    const updateParams = {
+                        TableName: tableName,
+                        Key: {
+                            'PackageID': packageId,
+                        },
+                        UpdateExpression: 'set URL = :u',
+                        ExpressionAttributeValues: {
+                            ':u': packageURL,
+                        },
+                        ReturnValues: 'UPDATED_NEW',
+                    };
+                    dynamodb.update(updateParams, (err, data) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).json({ message: 'Error updating package in DynamoDB' });
+                            return;
+                        }
+                        else {
+                            console.log(data);
+                            res.status(200).json({ message: 'Version is updated.' });
+                        }
+                    });
                     // Upload the file to S3
                     s3.putObject(s3Params, (err, data) => {
                         if (err) {
@@ -414,8 +441,6 @@ app.delete('/package/:id', (req, res) => {
         }
     });
 });
-async function getZipFromURL(URL) {
-}
 // POST /package - Upload or Ingest a new package
 app.post('/package', async (req, res) => {
     // Logic for handling PackageCreate
