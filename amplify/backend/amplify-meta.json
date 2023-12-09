@@ -31,12 +31,11 @@
         "RootUrl": "https://s9w5fyhoi9.execute-api.us-east-2.amazonaws.com/staging",
         "ApiId": "s9w5fyhoi9"
       },
-      "lastPushTimeStamp": "2023-12-09T19:59:30.034Z",
+      "lastPushTimeStamp": "2023-12-09T20:28:16.689Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/api/packages-cloudformation-template.json",
         "logicalId": "apipackages"
-      },
-      "lastPushDirHash": "GW7YMHCfo0hwGkK+upMRwfpuxUc="
+      }
     },
     "t10v3": {
       "dependsOn": [],
@@ -67,12 +66,11 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "AppSync",
-      "lastPushTimeStamp": "2023-12-09T19:59:30.041Z",
+      "lastPushTimeStamp": "2023-12-09T20:28:16.692Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/api/cloudformation-template.json",
         "logicalId": "apit10v3"
-      },
-      "lastPushDirHash": "bv/p5W5TnzPStIUVyxBqc19LyZk="
+      }
     }
   },
   "auth": {
@@ -110,12 +108,11 @@
         "IdentityPoolName": "testAuthIdentityPool__staging",
         "UserPoolName": "t10v3"
       },
-      "lastPushTimeStamp": "2023-12-09T19:59:30.047Z",
+      "lastPushTimeStamp": "2023-12-09T20:28:16.694Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/auth/t10v3-cloudformation-template.json",
         "logicalId": "autht10v3"
-      },
-      "lastPushDirHash": "38832WEFT05kZK2oroeVJ7mKi+M="
+      }
     }
   },
   "function": {
@@ -144,20 +141,20 @@
         "Name": "packagesLambda-staging",
         "LambdaExecutionRole": "t10v3LambdaRole302b6ddf-staging"
       },
-      "lastPushTimeStamp": "2023-12-09T19:59:31.832Z",
+      "lastPushTimeStamp": "2023-12-09T20:28:19.310Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/function/packagesLambda-cloudformation-template.json",
         "logicalId": "functionpackagesLambda"
       },
       "s3Bucket": {
         "deploymentBucketName": "amplify-t10v3-staging-22058-deployment",
-        "s3Key": "amplify-builds/packagesLambda-3150626c642f42456543-build.zip"
+        "s3Key": "amplify-builds/packagesLambda-31636b716a7a35585457-build.zip"
       },
-      "lastBuildTimeStamp": "2023-12-09T19:58:19.100Z",
+      "lastBuildTimeStamp": "2023-12-09T20:26:44.053Z",
       "lastBuildType": "PROD",
-      "lastPackageTimeStamp": "2023-12-09T19:58:22.129Z",
-      "distZipFilename": "packagesLambda-3150626c642f42456543-build.zip",
-      "lastPushDirHash": "J1JIWXS7RcBSIeEhlkfq+c4kg9s="
+      "lastPackageTimeStamp": "2023-12-09T20:27:07.125Z",
+      "distZipFilename": "packagesLambda-31636b716a7a35585457-build.zip",
+      "lastPushDirHash": "p+gExPwXZUK9oF9It2HjlQzQT/4="
     }
   },
   "storage": {
@@ -172,12 +169,11 @@
         "PartitionKeyType": "S",
         "Name": "PackagesTable-staging"
       },
-      "lastPushTimeStamp": "2023-12-09T19:59:30.056Z",
+      "lastPushTimeStamp": "2023-12-09T20:28:16.698Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/storage/PackagesTable-cloudformation-template.json",
         "logicalId": "storagePackagesTable"
-      },
-      "lastPushDirHash": "41fek84roI5jkSNomLQpG6mCW2A="
+      }
     },
     "s3t10v3packages": {
       "dependsOn": [],
@@ -187,12 +183,11 @@
         "BucketName": "t10-v3-packages22058-staging",
         "Region": "us-east-2"
       },
-      "lastPushTimeStamp": "2023-12-09T19:59:30.058Z",
+      "lastPushTimeStamp": "2023-12-09T20:28:16.701Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
         "logicalId": "storages3t10v3packages"
-      },
-      "lastPushDirHash": "WrQW7YqZquiBWpt/AwKn9G43AbM="
+      }
     }
   }
 }
