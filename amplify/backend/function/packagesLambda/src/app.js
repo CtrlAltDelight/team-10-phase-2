@@ -187,6 +187,54 @@ async function resetS3Bucket() {
 // GET /package/{id} - Interact with the package with this ID
 app.get('/package/:id', (req, res) => {
     // Logic for handling PackageRetrieve
+    const id = req.params.id;
+    // Get the package from DynamoDB
+    const params = {
+        TableName: tableName,
+        Key: {
+            'PackageID': id,
+        }
+    };
+    dynamodb.get(params, (err, data) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Error retrieving package from DynamoDB' });
+            return;
+        }
+        else {
+            console.log(data);
+            if (data.Item) {
+                const s3Key = `${data.Item.Name}/${data.Item.Version}.zip`;
+                const s3Params = {
+                    Bucket: s3BucketName,
+                    Key: s3Key,
+                };
+                // Get the package from S3
+                s3.getObject(s3Params, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json({ message: 'Error retrieving package from S3' });
+                        return;
+                    }
+                    else {
+                        console.log(data);
+                        const body = Buffer.from(data.Body, 'base64');
+                        const responseJson = { 'metadata': { 'Name': data.Item.Name, 'Version': data.Item.Version, 'ID': data.Item.PackageID },
+                            'data': { 'content': body } };
+                        if (data.Item.URL) {
+                            responseJson.metadata.URL = data.Item.URL;
+                        }
+                        res.status(200).json(responseJson);
+                        return;
+                    }
+                });
+            }
+            else {
+                res.status(404).json({ message: 'Package does not exist' });
+                return;
+            }
+        }
+    });
 });
 // PUT /package/{id} - Update the content of the package
 // app.put('/package/:id', (req, res) => {
@@ -278,6 +326,7 @@ app.post('/package', async (req, res) => {
                             'PackageID': s3Key,
                             'Name': packageName,
                             'Version': packageVersion,
+                            'URL': URL,
                             'Score': 0,
                         }
                     };
