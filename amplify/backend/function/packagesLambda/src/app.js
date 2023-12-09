@@ -204,7 +204,7 @@ app.get('/package/:id', (req, res) => {
         else {
             console.log(data);
             if (data.Item) {
-                const s3Key = `${data.Item.Name}/${data.Item.Version}.zip`;
+                const s3Key = `${data.Item.Name}-${data.Item.Version}.zip`;
                 const s3Params = {
                     Bucket: s3BucketName,
                     Key: s3Key,
@@ -264,7 +264,7 @@ app.delete('/package/:id', (req, res) => {
         else {
             console.log(data);
             if (data.Item) {
-                const s3Key = `${data.Item.Name}/${data.Item.Version}.zip`;
+                const s3Key = `${data.Item.Name}-${data.Item.Version}.zip`;
                 const s3Params = {
                     Bucket: s3BucketName,
                     Key: s3Key,

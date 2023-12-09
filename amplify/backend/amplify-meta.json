@@ -31,7 +31,7 @@
         "RootUrl": "https://s9w5fyhoi9.execute-api.us-east-2.amazonaws.com/staging",
         "ApiId": "s9w5fyhoi9"
       },
-      "lastPushTimeStamp": "2023-12-09T19:52:59.613Z",
+      "lastPushTimeStamp": "2023-12-09T19:59:30.034Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/api/packages-cloudformation-template.json",
         "logicalId": "apipackages"
@@ -67,7 +67,7 @@
       },
       "providerPlugin": "awscloudformation",
       "service": "AppSync",
-      "lastPushTimeStamp": "2023-12-09T19:52:59.616Z",
+      "lastPushTimeStamp": "2023-12-09T19:59:30.041Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/api/cloudformation-template.json",
         "logicalId": "apit10v3"
@@ -110,7 +110,7 @@
         "IdentityPoolName": "testAuthIdentityPool__staging",
         "UserPoolName": "t10v3"
       },
-      "lastPushTimeStamp": "2023-12-09T19:52:59.618Z",
+      "lastPushTimeStamp": "2023-12-09T19:59:30.047Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/auth/t10v3-cloudformation-template.json",
         "logicalId": "autht10v3"
@@ -144,20 +144,20 @@
         "Name": "packagesLambda-staging",
         "LambdaExecutionRole": "t10v3LambdaRole302b6ddf-staging"
       },
-      "lastPushTimeStamp": "2023-12-09T19:53:18.477Z",
+      "lastPushTimeStamp": "2023-12-09T19:59:31.832Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/function/packagesLambda-cloudformation-template.json",
         "logicalId": "functionpackagesLambda"
       },
       "s3Bucket": {
         "deploymentBucketName": "amplify-t10v3-staging-22058-deployment",
-        "s3Key": "amplify-builds/packagesLambda-53794c2f6c46456e7655-build.zip"
+        "s3Key": "amplify-builds/packagesLambda-3150626c642f42456543-build.zip"
       },
-      "lastBuildTimeStamp": "2023-12-09T19:53:12.157Z",
+      "lastBuildTimeStamp": "2023-12-09T19:58:19.100Z",
       "lastBuildType": "PROD",
-      "lastPackageTimeStamp": "2023-12-09T19:53:15.215Z",
-      "distZipFilename": "packagesLambda-53794c2f6c46456e7655-build.zip",
-      "lastPushDirHash": "vDRtTRgeJjdypclGSBvqNSz/+l4="
+      "lastPackageTimeStamp": "2023-12-09T19:58:22.129Z",
+      "distZipFilename": "packagesLambda-3150626c642f42456543-build.zip",
+      "lastPushDirHash": "J1JIWXS7RcBSIeEhlkfq+c4kg9s="
     }
   },
   "storage": {
@@ -172,7 +172,7 @@
         "PartitionKeyType": "S",
         "Name": "PackagesTable-staging"
       },
-      "lastPushTimeStamp": "2023-12-09T19:52:59.622Z",
+      "lastPushTimeStamp": "2023-12-09T19:59:30.056Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/storage/PackagesTable-cloudformation-template.json",
         "logicalId": "storagePackagesTable"
@@ -187,7 +187,7 @@
         "BucketName": "t10-v3-packages22058-staging",
         "Region": "us-east-2"
       },
-      "lastPushTimeStamp": "2023-12-09T19:53:02.132Z",
+      "lastPushTimeStamp": "2023-12-09T19:59:30.058Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-t10v3-staging-22058-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
         "logicalId": "storages3t10v3packages"
