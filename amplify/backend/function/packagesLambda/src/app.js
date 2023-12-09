@@ -221,9 +221,138 @@ app.get('/package/:id', (req, res) => {
     });
 });
 // PUT /package/{id} - Update the content of the package
-// app.put('/package/:id', (req, res) => {
-//     // Logic for handling PackageUpdate
-// });
+app.put('/package/:id', (req, res) => {
+    // Logic for handling PackageUpdate
+    const id = req.params.id;
+    const body = req.body;
+    const { Name, Version, ID } = body.metadata;
+    const { URL, Content } = body.data;
+    if ((!URL && !Content) || (URL && Content)) {
+        res.status(400).json({ message: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
+        return;
+    }
+    if (id !== ID) {
+        res.status(400).json({ message: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
+        return;
+    }
+    const packageId = `${Name}-${Version}.zip`;
+    // Update the package in DynamoDB
+    const params = {
+        TableName: tableName,
+        Key: {
+            'PackageID': packageId,
+        }
+    };
+    dynamodb.get(params, async (err, data) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Error retrieving package from DynamoDB' });
+            return;
+        }
+        else {
+            console.log(data);
+            if (data.Item) {
+                const s3Key = `${data.Item.Name}-${data.Item.Version}.zip`;
+                const s3Params = {
+                    Bucket: s3BucketName,
+                    Key: s3Key,
+                };
+                // Update the package in dynamoDB and s3
+                if (URL) {
+                    const zipUrl = `${URL}/archive/main.zip`;
+                    let response = null;
+                    console.log('RESPONSE');
+                    try {
+                        response = await axios.get(zipUrl, { responseType: 'arraybuffer' });
+                        // console.log(response);
+                    }
+                    catch (error) {
+                        try {
+                            const newZipUrl = `${URL}/archive/master.zip`;
+                            response = await axios.get(newZipUrl, { responseType: 'arraybuffer' });
+                            // console.log(response);
+                        }
+                        catch (_a) {
+                            console.log(error);
+                            res.status(500).json({ message: 'Error downloading from URL' });
+                            return;
+                        }
+                    }
+                    if (response) {
+                        const body = Buffer.from(response.data, 'binary');
+                    }
+                    const base64Body = body.toString('base64');
+                    const updateParams = {
+                        TableName: tableName,
+                        Key: {
+                            'PackageID': packageId,
+                        },
+                        UpdateExpression: 'set URL = :u',
+                        ExpressionAttributeValues: {
+                            ':u': URL,
+                        },
+                        ReturnValues: 'UPDATED_NEW',
+                    };
+                    dynamodb.update(updateParams, (err, data) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).json({ message: 'Error updating package in DynamoDB' });
+                            return;
+                        }
+                        else {
+                            console.log(data);
+                            res.status(200).json({ message: 'Package is updated' });
+                        }
+                    });
+                    // Update S3 with the new content
+                    const s3Params = {
+                        Bucket: s3BucketName,
+                        Key: s3Key,
+                        Body: base64Body
+                    };
+                    // Upload the file to S3
+                    s3.putObject(s3Params, (err, data) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).json({ message: 'Error uploading package to S3' });
+                            return;
+                        }
+                        else {
+                            console.log(data);
+                            res.status(200).json({ message: 'Version is updated.' });
+                            return;
+                        }
+                    });
+                }
+                else {
+                    const content = body.toString('base64');
+                    const s3Params = {
+                        Bucket: s3BucketName,
+                        Key: s3Key,
+                        Body: content
+                    };
+                    // Upload the file to S3
+                    s3.putObject(s3Params, (err, data) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).json({ message: 'Error uploading package to S3' });
+                            return;
+                        }
+                        else {
+                            console.log(data);
+                            res.status(200).json({ message: 'Version is updated.' });
+                            return;
+                        }
+                    });
+                }
+            }
+            else {
+                res.status(404).json({ message: 'Package does not exist' });
+                return;
+            }
+        }
+    });
+});
 // DELETE /package/{id} - Delete this version of the package
 app.delete('/package/:id', (req, res) => {
     // Logic for handling PackageDelete
@@ -285,6 +414,8 @@ app.delete('/package/:id', (req, res) => {
         }
     });
 });
+async function getZipFromURL(URL) {
+}
 // POST /package - Upload or Ingest a new package
 app.post('/package', async (req, res) => {
     // Logic for handling PackageCreate
@@ -406,11 +537,13 @@ app.post('/package', async (req, res) => {
         console.log(packageName);
         const packageVersion = parsedPackageJSON.version;
         console.log(packageVersion);
+        const packageURL = parsedPackageJSON.repository.url;
         const s3Key = `${packageName}-${packageVersion}.zip`;
         const params = {
             Bucket: s3BucketName,
             Key: s3Key,
-            Body: Content
+            Body: Content,
+            URL: packageURL,
         };
         // Check if the object already exists in S3
         try {
