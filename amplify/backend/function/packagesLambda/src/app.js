@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 /*
 Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
@@ -25,6 +16,7 @@ AWS.config.update({ region: process.env.TABLE_REGION });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const s3 = new AWS.S3();
 const tableName = 'PackagesTable-staging';
+const s3BucketName = 't10-v3-packages22058-staging';
 // if (process.env.ENV && process.env.ENV !== 'NONE') {
 //   tableName = tableName + '-' + process.env.ENV;
 // }
@@ -63,9 +55,68 @@ app.post('/packages', (req, res) => {
     res.status(200).json({ message: 'you made it' });
 });
 // DELETE /reset - Reset the registry
-app.delete('/reset', (req, res) => {
+app.delete('/reset', async (req, res) => {
     // Logic for handling RegistryReset
+    try {
+        await resetS3Bucket();
+        await resetDynamoDB();
+        res.status(200).json({ message: 'Registry is reset' });
+        return;
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ message: 'Error resetting S3 bucket or DynamoDB' });
+        return;
+    }
 });
+async function resetDynamoDB() {
+    const params = {
+        TableName: tableName,
+    };
+    try {
+        const data = await dynamodb.scan(params).promise();
+        console.log(data);
+        if (data.Items.length == 0) {
+            return;
+        }
+        const deleteParams = {
+            RequestItems: {}
+        };
+        deleteParams.RequestItems[tableName] = [];
+        data.Items.forEach((item) => {
+            deleteParams.RequestItems[tableName].push({ DeleteRequest: { Key: { 'PackageID': item.PackageID } } });
+        });
+        await dynamodb.batchWrite(deleteParams).promise();
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+async function resetS3Bucket() {
+    const params = {
+        Bucket: s3BucketName,
+    };
+    try {
+        const data = await s3.listObjects(params).promise();
+        console.log(data);
+        if (data.Contents.length == 0) {
+            return;
+        }
+        const deleteParams = {
+            Bucket: s3BucketName,
+            Delete: { Objects: [] }
+        };
+        data.Contents.forEach((content) => {
+            deleteParams.Delete.Objects.push({ Key: content.Key });
+        });
+        await s3.deleteObjects(deleteParams).promise();
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
 // GET /package/{id} - Interact with the package with this ID
 app.get('/package/:id', (req, res) => {
     // Logic for handling PackageRetrieve
@@ -79,7 +130,7 @@ app.get('/package/:id', (req, res) => {
 //     // Logic for handling PackageDelete
 // });
 // POST /package - Upload or Ingest a new package
-app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/package', async (req, res) => {
     // Logic for handling PackageCreate
     console.log('REQUEST');
     // console.log(req);
@@ -87,8 +138,8 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     console.log(req.body);
     console.log('Type of req body');
     console.log(typeof req.body);
-    const { URL, content } = req.body;
-    if ((!URL && !content) || (URL && content)) {
+    const { URL, Content } = req.body;
+    if ((!URL && !Content) || (URL && Content)) {
         res.status(400).json({ message: 'There is missing field(s) in the PackageData/AuthenticationToken \
                                           or it is formed improperly (e.g. Content and URL are both set), or\
                                            the AuthenticationToken is invalid.' });
@@ -102,13 +153,13 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         let response = null;
         console.log('RESPONSE');
         try {
-            response = yield axios.get(zipUrl, { responseType: 'arraybuffer' });
+            response = await axios.get(zipUrl, { responseType: 'arraybuffer' });
             // console.log(response);
         }
         catch (error) {
             try {
                 const newZipUrl = `${URL}/archive/master.zip`;
-                response = yield axios.get(newZipUrl, { responseType: 'arraybuffer' });
+                response = await axios.get(newZipUrl, { responseType: 'arraybuffer' });
                 // console.log(response);
             }
             catch (_a) {
@@ -122,7 +173,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             console.log('BODY');
             console.log(body);
             console.log('FINDING PACKAGE JSON');
-            const packageJSON = yield findPackageJSON(body);
+            const packageJSON = await findPackageJSON(body);
             if (!packageJSON) {
                 res.status(500).json({ message: 'Error finding package.json in zip file' });
                 return;
@@ -136,13 +187,13 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             console.log(packageVersion);
             const s3Key = `${packageName}-${packageVersion}.zip`;
             const params = {
-                Bucket: 't10-v3-packages22058-staging',
+                Bucket: s3BucketName,
                 Key: s3Key,
                 Body: body
             };
             // Check if the object already exists in S3
             try {
-                yield s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
+                await s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
                 console.log('File already exists in S3');
                 res.status(409).json({ message: 'Package exists already' });
                 return;
@@ -150,7 +201,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             catch (err) { // If the object does not exist in S3, upload it
                 try {
                     // Upload the file to S3
-                    yield s3.putObject(params).promise();
+                    await s3.putObject(params).promise();
                     // Upload Name, Version, and ID to DynamoDB
                     const packageParams = {
                         TableName: tableName,
@@ -161,7 +212,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
                             'Score': 0,
                         }
                     };
-                    yield dynamodb.put(packageParams).promise();
+                    await dynamodb.put(packageParams).promise();
                     console.log('File uploaded successfully.');
                     res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
                         'data': { 'content': body } });
@@ -180,11 +231,11 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         // Then, return the PackageID
         // Extract the package name and version from the package.json file
         // Content is a base64 encoded string
-        const body = Buffer.from(content, 'base64');
+        const body = Buffer.from(Content, 'base64');
         console.log('BODY');
         console.log(body);
         console.log('FINDING PACKAGE JSON');
-        const packageJSON = yield findPackageJSON(body);
+        const packageJSON = await findPackageJSON(body);
         if (!packageJSON) {
             res.status(500).json({ message: 'Error finding package.json in zip file' });
             return;
@@ -198,13 +249,13 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         console.log(packageVersion);
         const s3Key = `${packageName}-${packageVersion}.zip`;
         const params = {
-            Bucket: 't10-v3-packages22058-staging',
+            Bucket: s3BucketName,
             Key: s3Key,
             Body: body
         };
         // Check if the object already exists in S3
         try {
-            yield s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
+            await s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
             console.log('File already exists in S3');
             res.status(409).json({ message: 'Package exists already' });
             return;
@@ -212,7 +263,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         catch (err) { // If the object does not exist in S3, upload it
             try {
                 // Upload the file to S3
-                yield s3.putObject(params).promise();
+                await s3.putObject(params).promise();
                 // Upload Name, Version, and ID to DynamoDB
                 const packageParams = {
                     TableName: tableName,
@@ -223,7 +274,7 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
                         'Score': 0,
                     }
                 };
-                yield dynamodb.put(packageParams).promise();
+                await dynamodb.put(packageParams).promise();
                 console.log('File uploaded successfully.');
                 res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
                     'data': { 'content': body } });
@@ -236,26 +287,24 @@ app.post('/package', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             }
         }
     }
-}));
+});
 // Helper function to find the package.json file in the zip file
-function findPackageJSON(body) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const zip = new JSZip();
-        const loadedZip = yield zip.loadAsync(body);
-        for (const relativePath in loadedZip.files) {
-            console.log('relativePath=', relativePath);
-            const pathParts = relativePath.split('/');
-            console.log('pathParts[1]=', pathParts[1]);
-            if (pathParts.length == 2 && pathParts[1] === 'package.json') {
-                console.log('I GOT HERE');
-                const packageInfo = yield loadedZip.file(relativePath).async('text');
-                console.log('packageInfo');
-                console.log(packageInfo);
-                return packageInfo;
-            }
+async function findPackageJSON(body) {
+    const zip = new JSZip();
+    const loadedZip = await zip.loadAsync(body);
+    for (const relativePath in loadedZip.files) {
+        console.log('relativePath=', relativePath);
+        const pathParts = relativePath.split('/');
+        console.log('pathParts[1]=', pathParts[1]);
+        if (pathParts.length == 2 && pathParts[1] === 'package.json') {
+            console.log('I GOT HERE');
+            const packageInfo = await loadedZip.file(relativePath).async('text');
+            console.log('packageInfo');
+            console.log(packageInfo);
+            return packageInfo;
         }
-        throw new Error('package.json not found');
-    });
+    }
+    throw new Error('package.json not found');
 }
 // GET /package/{id}/rate - Get ratings for this package
 // app.get('/package/:id/rate', (req, res) => {

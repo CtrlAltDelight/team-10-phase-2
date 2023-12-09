@@ -19,6 +19,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 const s3 = new AWS.S3();
 
 const tableName = 'PackagesTable-staging';
+const s3BucketName = 't10-v3-packages22058-staging';
 // if (process.env.ENV && process.env.ENV !== 'NONE') {
 //   tableName = tableName + '-' + process.env.ENV;
 // }
@@ -64,9 +65,80 @@ app.post('/packages', (req: any, res: any) => {
 });
 
 // DELETE /reset - Reset the registry
-app.delete('/reset', (req: any, res: any) => {
+app.delete('/reset', async (req: any, res: any) => {
     // Logic for handling RegistryReset
+    try {
+      await resetS3Bucket();
+      await resetDynamoDB();
+
+      res.status(200).json({ message: 'Registry is reset' });
+      return;
+    } 
+    catch(err) {
+      console.log(err);
+      res.status(500).json({ message: 'Error resetting S3 bucket or DynamoDB' });
+      return;
+    }
 });
+
+async function resetDynamoDB() {
+    const params = {
+        TableName: tableName,
+    };
+
+    try {
+        const data = await dynamodb.scan(params).promise();
+        console.log(data);
+        if (data.Items.length == 0) {
+            return;
+        }
+
+        const deleteParams: any = {
+            RequestItems: {}
+        };
+
+        deleteParams.RequestItems[tableName] = [];
+
+        data.Items.forEach((item: any) => {
+            deleteParams.RequestItems[tableName].push({ DeleteRequest: { Key: { 'PackageID': item.PackageID }}});
+        });
+
+        await dynamodb.batchWrite(deleteParams).promise();
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+async function resetS3Bucket() {
+    const params = {
+        Bucket: s3BucketName,
+    };
+
+    try {
+        const data = await s3.listObjects(params).promise();
+        console.log(data);
+        if (data.Contents.length == 0) {
+            return;
+        }
+
+        const deleteParams: any = {
+            Bucket: s3BucketName,
+            Delete: { Objects: []}
+        };
+
+        data.Contents.forEach((content: any) => {
+            deleteParams.Delete.Objects.push({ Key: content.Key });
+        });
+
+        await s3.deleteObjects(deleteParams).promise();
+    }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
 
 // GET /package/{id} - Interact with the package with this ID
 app.get('/package/:id', (req: any, res:any) => {
@@ -146,7 +218,7 @@ app.post('/package', async (req: any, res: any) => {
           const s3Key = `${packageName}-${packageVersion}.zip`;
 
           const params = {
-              Bucket: 't10-v3-packages22058-staging',
+              Bucket: s3BucketName,
               Key: s3Key,
               Body: body
           };
@@ -214,7 +286,7 @@ app.post('/package', async (req: any, res: any) => {
         const s3Key = `${packageName}-${packageVersion}.zip`;
 
         const params = {
-            Bucket: 't10-v3-packages22058-staging',
+            Bucket: s3BucketName,
             Key: s3Key,
             Body: body
         };
