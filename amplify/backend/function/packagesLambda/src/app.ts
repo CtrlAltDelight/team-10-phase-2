@@ -20,20 +20,6 @@ const s3 = new AWS.S3();
 
 const tableName = 'PackagesTable-staging';
 const s3BucketName = 't10-v3-packages22058-staging';
-// if (process.env.ENV && process.env.ENV !== 'NONE') {
-//   tableName = tableName + '-' + process.env.ENV;
-// }
-
-// const userIdPresent = false; // TODO: update in case is required to use that definition
-// const partitionKeyName = 'PackageID';
-// const partitionKeyType = 'S';
-// const sortKeyName = '';
-// const sortKeyType = '';
-// const hasSortKey = sortKeyName !== '';
-// const path = '/package/:id';
-// const UNAUTH = 'UNAUTH';
-// const hashKeyPath = '/:' + partitionKeyName;
-// const sortKeyPath = hasSortKey ? '/:' + sortKeyName : '';
 
 // declare a new express app
 const app = express();
@@ -46,16 +32,6 @@ app.use(function(req: any, res: any, next: any) {
   res.header('Access-Control-Allow-Headers', '*');
   next();
 });
-
-// convert url string param to expected Type
-// const convertUrlType = (param, type) => {
-//   switch(type) {
-//     case 'N':
-//       return Number.parseInt(param);
-//     default:
-//       return param;
-//   }
-// };
 
 app.use(express.json()); // Middleware to parse JSON bodies
 
@@ -128,7 +104,7 @@ async function getPackages(pkgQuery: any[]) {
     const searchResults = [];
     for (let i = 0; i < data.Items.length; i++) {
       const item = data.Items[i];
-      if (pkgQuery[0].name === item.Name && pkgQuery[1].version === item.Version) {
+      if (pkgQuery[0].name === item.Name && pkgQuery[0].version === item.Version) {
         searchResults.push(item);
       }
     }
