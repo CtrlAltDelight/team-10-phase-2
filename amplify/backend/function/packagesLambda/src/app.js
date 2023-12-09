@@ -252,7 +252,7 @@ app.post('/package', async (req, res) => {
             console.log(packageName);
             const packageVersion = parsedPackageJSON.version;
             console.log(packageVersion);
-            const s3Key = `${packageName}-${packageVersion}.zip`;
+            const s3Key = `${packageName}/${packageVersion}.zip`;
             // Convert body to base64 encoded string
             const content = body.toString('base64');
             const params = {

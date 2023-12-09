@@ -220,6 +220,7 @@ async function resetS3Bucket() {
 // GET /package/{id} - Interact with the package with this ID
 app.get('/package/:id', (req: any, res:any) => {
     // Logic for handling PackageRetrieve
+    const id = req.params.id;
 });
 
 // PUT /package/{id} - Update the content of the package
@@ -292,7 +293,7 @@ app.post('/package', async (req: any, res: any) => {
           const packageVersion = parsedPackageJSON.version;
           console.log(packageVersion);
 
-          const s3Key = `${packageName}-${packageVersion}.zip`;
+          const s3Key = `${packageName}/${packageVersion}.zip`;
 
           // Convert body to base64 encoded string
           const content = body.toString('base64');
@@ -314,6 +315,7 @@ app.post('/package', async (req: any, res: any) => {
               // Upload the file to S3
               await s3.putObject(params).promise();
               // Upload Name, Version, and ID to DynamoDB
+
               const packageParams = {
                 TableName: tableName,
                 Item: {
