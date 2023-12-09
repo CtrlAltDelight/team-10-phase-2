@@ -60,9 +60,86 @@ app.use(function(req: any, res: any, next: any) {
 app.use(express.json()); // Middleware to parse JSON bodies
 
 // POST /packages - Get the packages from the registry
-app.post('/packages', (req: any, res: any) => {
-    res.status(200).json({ message: 'you made it' });
+app.post('/packages', async (req: any, res: any) => {
+    // Extract offset from header
+    let offset = req.header('offset');
+    if (!offset) {
+        offset = 1;
+    }
+
+    const pkgQuery: any[] = req.body;
+    console.log('pkgQuery= ', pkgQuery);
+
+    // Logic for handling PackageQuery
+    let searchResults;
+    try {
+      if (pkgQuery[0].name === '*') {
+        //Get all the packages
+        searchResults = await getAllPackages(offset);
+      }
+      else {
+        // Get the packages that match the query
+        searchResults = await getPackages(pkgQuery);
+      }
+    }
+    catch(err) {
+      res.status(500).json({ message: 'Error querying DynamoDB' });
+      return;
+    }
 });
+
+async function getAllPackages(offset: number) {
+  const params = {
+    TableName: tableName,
+  };
+
+  try {
+    const data = await dynamodb.scan(params).promise();
+    console.log(data);
+    if (data.Items.length == 0) {
+      return;
+    }
+
+    const searchResults = [];
+    for (let i = offset; i < data.Items.length; i++) {
+      searchResults.push(data.Items[i]);
+    }
+
+    return searchResults;
+  }
+  catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+async function getPackages(pkgQuery: any[]) {
+  const params = {
+    TableName: tableName,
+  };
+
+  try {
+    const data = await dynamodb.scan(params).promise();
+    console.log(data);
+    if (data.Items.length == 0) {
+      return;
+    }
+
+    const searchResults = [];
+    for (let i = 0; i < data.Items.length; i++) {
+      const item = data.Items[i];
+      if (pkgQuery[0].name === item.Name && pkgQuery[1].version === item.Version) {
+        searchResults.push(item);
+      }
+    }
+
+    return searchResults;
+  }
+  catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
 
 // DELETE /reset - Reset the registry
 app.delete('/reset', async (req: any, res: any) => {
@@ -217,10 +294,12 @@ app.post('/package', async (req: any, res: any) => {
 
           const s3Key = `${packageName}-${packageVersion}.zip`;
 
+          // Convert body to base64 encoded string
+          const content = body.toString('base64');
           const params = {
               Bucket: s3BucketName,
               Key: s3Key,
-              Body: body
+              Body: content
           };
 
           // Check if the object already exists in S3
@@ -288,7 +367,7 @@ app.post('/package', async (req: any, res: any) => {
         const params = {
             Bucket: s3BucketName,
             Key: s3Key,
-            Body: body
+            Body: Content
         };
 
         // Check if the object already exists in S3
