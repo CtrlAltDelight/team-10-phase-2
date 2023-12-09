@@ -92,8 +92,8 @@ app.post('/package', async (req: any, res: any) => {
     console.log(req.body);
     console.log('Type of req body');
     console.log(typeof req.body);
-    const {URL, content} = req.body;
-    if ((!URL && !content) || (URL && content)) {
+    const {URL, Content} = req.body;
+    if ((!URL && !Content) || (URL && Content)) {
         res.status(400).json({ message: 'There is missing field(s) in the PackageData/AuthenticationToken \
                                           or it is formed improperly (e.g. Content and URL are both set), or\
                                            the AuthenticationToken is invalid.' });
@@ -193,7 +193,7 @@ app.post('/package', async (req: any, res: any) => {
 
         // Extract the package name and version from the package.json file
         // Content is a base64 encoded string
-        const body = Buffer.from(content, 'base64');
+        const body = Buffer.from(Content, 'base64');
         console.log('BODY');
         console.log(body);
 
