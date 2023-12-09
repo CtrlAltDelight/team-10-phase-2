@@ -445,6 +445,10 @@ app.post('/package/byRegEx', (req, res) => {
     // Logic for handling PackageByRegExGet
     const body = req.body;
     const regex = body.RegEx;
+    if (!regex) {
+        res.status(400).json({ message: 'There is missing field(s) in the PackageRegEx/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
+        return;
+    }
     // Search Packages in DynamoDB by input regular expression
     const params = {
         TableName: tableName,
@@ -458,7 +462,7 @@ app.post('/package/byRegEx', (req, res) => {
         else {
             console.log(data);
             if (data.Items.length == 0) {
-                res.status(404).json({ message: 'No packages found' });
+                res.status(404).json({ message: 'No package found under this regex.' });
                 return;
             }
             else {
