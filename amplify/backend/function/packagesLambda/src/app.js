@@ -241,9 +241,66 @@ app.get('/package/:id', (req, res) => {
 //     // Logic for handling PackageUpdate
 // });
 // DELETE /package/{id} - Delete this version of the package
-// app.delete('/package/:id', (req, res) => {
-//     // Logic for handling PackageDelete
-// });
+app.delete('/package/:id', (req, res) => {
+    // Logic for handling PackageDelete
+    const id = req.params.id;
+    if (!id) {
+        res.status(400).json({ message: 'There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.' });
+        return;
+    }
+    // Delete package from s3 and dynamoDB of this id
+    const params = {
+        TableName: tableName,
+        Key: {
+            'PackageID': id,
+        }
+    };
+    dynamodb.get(params, (err, data) => {
+        if (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Error retrieving package from DynamoDB' });
+            return;
+        }
+        else {
+            console.log(data);
+            if (data.Item) {
+                const s3Key = `${data.Item.Name}/${data.Item.Version}.zip`;
+                const s3Params = {
+                    Bucket: s3BucketName,
+                    Key: s3Key,
+                };
+                // Delete the package from S3
+                s3.deleteObject(s3Params, (err, data) => {
+                    if (err) {
+                        console.log(err);
+                        res.status(500).json({ message: 'Error deleting package from S3' });
+                        return;
+                    }
+                    else {
+                        console.log(data);
+                        // Delete the package from DynamoDB
+                        dynamodb.delete(params, (err, data) => {
+                            if (err) {
+                                console.log(err);
+                                res.status(500).json({ message: 'Error deleting package from DynamoDB' });
+                                return;
+                            }
+                            else {
+                                console.log(data);
+                                res.status(200).json({ message: 'Package is deleted' });
+                                return;
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                res.status(404).json({ message: 'Package does not exist' });
+                return;
+            }
+        }
+    });
+});
 // POST /package - Upload or Ingest a new package
 app.post('/package', async (req, res) => {
     // Logic for handling PackageCreate
@@ -300,7 +357,7 @@ app.post('/package', async (req, res) => {
             console.log(packageName);
             const packageVersion = parsedPackageJSON.version;
             console.log(packageVersion);
-            const s3Key = `${packageName}/${packageVersion}.zip`;
+            const s3Key = `${packageName}-${packageVersion}.zip`;
             // Convert body to base64 encoded string
             const content = body.toString('base64');
             const params = {
