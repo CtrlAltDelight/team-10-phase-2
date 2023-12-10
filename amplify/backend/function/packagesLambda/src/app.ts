@@ -1,3 +1,5 @@
+import JSZip from "jszip";
+
 /*
 Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
@@ -524,7 +526,7 @@ app.post('/package', async (req: any, res: any) => {
     console.log(req.body);
     console.log('Type of req body');
     console.log(typeof req.body);
-    let {URL, Content} = req.body;
+    const {URL, Content} = req.body;
     if ((!URL && !Content) || (URL && Content)) {
         res.status(400).json({ message: 'There is missing field(s) in the PackageData/AuthenticationToken \
                                           or it is formed improperly (e.g. Content and URL are both set), or\
@@ -573,16 +575,16 @@ app.post('/package', async (req: any, res: any) => {
     console.log(packageBuf);
 
     const zip = new JSZip();
-    const loadedZip = await zip.loadAsync(packageBuf);
+    const loadedZip: JSZip = await zip.loadAsync(packageBuf);
 
     console.log('FINDING PACKAGE JSON');
-    const packageJSON = await findPackageJSON(packageBuf);
+    const packageJSON = await findPackageJSON(loadedZip);
     if (!packageJSON) {
         res.status(500).json({ message: 'Error finding package.json in zip file' });
         return;
     }
     console.log(packageJSON);
-    const parsedPackageJSON = JSON.parse(loadedZip);
+    const parsedPackageJSON = JSON.parse(packageJSON);
     console.log(parsedPackageJSON);
     const packageName = parsedPackageJSON.name;
     console.log(packageName);
@@ -595,15 +597,15 @@ app.post('/package', async (req: any, res: any) => {
 
     const s3Key = `${packageName}-${packageVersion}.zip`;
 
+    const ContentStore = Content || (URL && packageBuf.toString('base64'));    
+    const URLStore = URL || (Content && parsedPackageJSON.repository.url);
+
     const params = {
         Bucket: s3BucketName,
         Key: s3Key,
-        Body: Content || (URL && packageBuf.toString('base64')),
+        Body: ContentStore,
     };
 
-    if (Content) {
-        URL = parsedPackageJSON.repository.url;
-    }
     // Check if the object already exists in S3
     try {
         await s3.headObject({ Bucket: params.Bucket, Key: params.Key }).promise();
@@ -630,8 +632,8 @@ app.post('/package', async (req: any, res: any) => {
         await dynamodb.put(packageParams).promise();
 
         console.log('File uploaded successfully.');
-        res.status(200).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
-                                    'data': {'content': packageBuf} });
+        res.status(201).json({ 'metadata': { 'Name': packageName, 'Version': packageVersion, 'ID': s3Key },
+                                    'data': {'content': ContentStore} });
         return;
         } catch (err) {
         console.error('Error uploading file:', err);
@@ -642,7 +644,7 @@ app.post('/package', async (req: any, res: any) => {
 });
 
 // Helper function to find the package.json file in the zip file
-async function findPackageJSON(loadedZip) {
+async function findPackageJSON(loadedZip: JSZip) {
     // const zip = new JSZip();
     // const loadedZip = await zip.loadAsync(body);
     
@@ -663,7 +665,7 @@ async function findPackageJSON(loadedZip) {
     throw new Error('package.json not found');
 }
 
-async function findReadme(loadedZip) {
+async function findReadme(loadedZip: JSZip) {
     // const zip = new JSZip();
     // const loadedZip = await zip.loadAsync(body);
     
