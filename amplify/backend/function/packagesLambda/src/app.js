@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 /*
 Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
@@ -7,28 +10,28 @@ Licensed under the Apache License, Version 2.0 (the "License"). You may not use 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 */
-const AWS = require('aws-sdk');
-const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
-const bodyParser = require('body-parser');
-const express = require('express');
-const axios = require('axios');
-const JSZip = require('jszip');
-AWS.config.update({ region: process.env.TABLE_REGION });
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const s3 = new AWS.S3();
+const aws_sdk_1 = __importDefault(require("aws-sdk"));
+const middleware_1 = __importDefault(require("aws-serverless-express/middleware"));
+const body_parser_1 = __importDefault(require("body-parser"));
+const express_1 = __importDefault(require("express"));
+const axios_1 = __importDefault(require("axios"));
+const jszip_1 = __importDefault(require("jszip"));
+aws_sdk_1.default.config.update({ region: process.env.TABLE_REGION });
+const dynamodb = new aws_sdk_1.default.DynamoDB.DocumentClient();
+const s3 = new aws_sdk_1.default.S3();
 const tableName = 'PackagesTable-staging';
 const s3BucketName = 't10-v3-packages22058-staging';
 // declare a new express app
-const app = express();
-app.use(bodyParser.json());
-app.use(awsServerlessExpressMiddleware.eventContext());
+const app = (0, express_1.default)();
+app.use(body_parser_1.default.json());
+app.use(middleware_1.default.eventContext());
 // Enable CORS for all methods
 app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', '*');
     next();
 });
-app.use(express.json()); // Middleware to parse JSON bodies
+app.use(express_1.default.json()); // Middleware to parse JSON bodies
 // POST /packages - Get the packages from the registry
 app.post('/packages', async (req, res) => {
     // Extract offset from header
@@ -260,13 +263,13 @@ app.put('/package/:id', (req, res) => {
                     let response = null;
                     console.log('RESPONSE');
                     try {
-                        response = await axios.get(zipUrl, { responseType: 'arraybuffer' });
+                        response = await axios_1.default.get(zipUrl, { responseType: 'arraybuffer' });
                         // console.log(response);
                     }
                     catch (error) {
                         try {
                             const newZipUrl = `${URL}/archive/master.zip`;
-                            response = await axios.get(newZipUrl, { responseType: 'arraybuffer' });
+                            response = await axios_1.default.get(newZipUrl, { responseType: 'arraybuffer' });
                             // console.log(response);
                         }
                         catch (_a) {
@@ -467,13 +470,13 @@ app.post('/package', async (req, res) => {
         let response = null;
         console.log('RESPONSE');
         try {
-            response = await axios.get(zipUrl, { responseType: 'arraybuffer' });
+            response = await axios_1.default.get(zipUrl, { responseType: 'arraybuffer' });
             // console.log(response);
         }
         catch (error) {
             try {
                 const newZipUrl = `${URL}/archive/master.zip`;
-                response = await axios.get(newZipUrl, { responseType: 'arraybuffer' });
+                response = await axios_1.default.get(newZipUrl, { responseType: 'arraybuffer' });
                 // console.log(response);
             }
             catch (_a) {
@@ -495,7 +498,7 @@ app.post('/package', async (req, res) => {
     }
     console.log('BODY');
     console.log(packageBuf);
-    const zip = new JSZip();
+    const zip = new jszip_1.default();
     const loadedZip = await zip.loadAsync(packageBuf);
     console.log('FINDING PACKAGE JSON');
     const packageJSON = await findPackageJSON(loadedZip);
@@ -636,7 +639,7 @@ app.post('/package/byRegEx', (req, res) => {
                 const searchResults = [];
                 for (let i = 0; i < data.Items.length; i++) {
                     const item = data.Items[i];
-                    if (item.Name.match(regex)) {
+                    if (item.Name.match(regex) || item.Readme.match(regex)) {
                         searchResults.push({ 'Version': item.Version, 'Name': item.Name });
                     }
                 }

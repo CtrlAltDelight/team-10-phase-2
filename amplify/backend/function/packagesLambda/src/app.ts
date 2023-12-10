@@ -1,5 +1,3 @@
-import JSZip from "jszip";
-
 /*
 Copyright 2017 - 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
@@ -7,12 +5,12 @@ Licensed under the Apache License, Version 2.0 (the "License"). You may not use 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 */
-const AWS = require('aws-sdk');
-const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
-const bodyParser = require('body-parser');
-const express = require('express');
-const axios = require('axios');
-const JSZip = require('jszip');
+import AWS from 'aws-sdk';
+import awsServerlessExpressMiddleware from 'aws-serverless-express/middleware';
+import bodyParser from 'body-parser';
+import express from 'express';
+import axios from 'axios';
+import JSZip from 'jszip';
 
 
 AWS.config.update({ region: process.env.TABLE_REGION });
@@ -737,7 +735,7 @@ app.post('/package/byRegEx', (req: any, res: any) => {
                 const searchResults = [];
                 for (let i = 0; i < data.Items.length; i++) {
                     const item = data.Items[i];
-                    if (item.Name.match(regex)) {
+                    if (item.Name.match(regex) || item.Readme.match(regex)) {
                         searchResults.push({'Version': item.Version, 'Name': item.Name});
                     }
                 }
