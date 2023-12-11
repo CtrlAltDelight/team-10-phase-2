@@ -47,7 +47,6 @@ var axios_1 = require("axios");
 var tmp = require("tmp");
 var eslint_1 = require("eslint");
 var path_1 = require("path");
-var path = require("path");
 var compatibleLicenses = [
     'mit license',
     'bsd 2-clause "simplified" license',
@@ -324,74 +323,81 @@ function license_ramp_up_metric(repoURL) {
 exports.license_ramp_up_metric = license_ramp_up_metric;
 function lintTsFilesInZip(zip) {
     return __awaiter(this, void 0, void 0, function () {
-        var eslint, totalIssues, resultCount, lintTsFilesRecursively;
-        var _this = this;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
+        var eslint, totalIssues, resultCount, _i, _a, _b, path_2, file, content, filePath, results, error_4;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     eslint = new eslint_1.ESLint();
                     totalIssues = 0;
                     resultCount = 0;
-                    lintTsFilesRecursively = function (zip, folderPath) {
-                        if (folderPath === void 0) { folderPath = ''; }
-                        return __awaiter(_this, void 0, void 0, function () {
-                            var _i, _a, _b, relativePath, zipEntry, fullPath, subZip, content, filePath, results, error_4;
-                            return __generator(this, function (_c) {
-                                switch (_c.label) {
-                                    case 0:
-                                        console.log(folderPath);
-                                        _i = 0, _a = Object.entries(zip.files);
-                                        _c.label = 1;
-                                    case 1:
-                                        if (!(_i < _a.length)) return [3 /*break*/, 9];
-                                        _b = _a[_i], relativePath = _b[0], zipEntry = _b[1];
-                                        fullPath = path.join(folderPath, relativePath);
-                                        if (!zipEntry.dir) return [3 /*break*/, 3];
-                                        subZip = zip.folder(relativePath);
-                                        if (!subZip) {
-                                            console.error("Error finding subfolder ".concat(fullPath, " in zip"));
-                                            return [2 /*return*/];
-                                        }
-                                        return [4 /*yield*/, lintTsFilesRecursively(subZip, fullPath)];
-                                    case 2:
-                                        _c.sent();
-                                        return [3 /*break*/, 8];
-                                    case 3:
-                                        if (!relativePath.endsWith('.ts')) return [3 /*break*/, 8];
-                                        // Lint TypeScript file
-                                        console.log('Linting ts file ' + fullPath);
-                                        console.log(fullPath);
-                                        return [4 /*yield*/, zipEntry.async('string')];
-                                    case 4:
-                                        content = _c.sent();
-                                        filePath = fullPath;
-                                        _c.label = 5;
-                                    case 5:
-                                        _c.trys.push([5, 7, , 8]);
-                                        console.log(resultCount++);
-                                        return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
-                                    case 6:
-                                        results = _c.sent();
-                                        console.log(results);
-                                        // lintResults.push({ filePath, lintResults: results });
-                                        totalIssues += results[0].errorCount + results[0].warningCount;
-                                        return [3 /*break*/, 8];
-                                    case 7:
-                                        error_4 = _c.sent();
-                                        console.error("Error linting ".concat(filePath, ":"), error_4);
-                                        return [3 /*break*/, 8];
-                                    case 8:
-                                        _i++;
-                                        return [3 /*break*/, 1];
-                                    case 9: return [2 /*return*/];
-                                }
-                            });
-                        });
-                    };
-                    return [4 /*yield*/, lintTsFilesRecursively(zip)];
+                    _i = 0, _a = Object.entries(zip.files);
+                    _c.label = 1;
                 case 1:
-                    _a.sent();
-                    return [2 /*return*/, totalIssues];
+                    if (!(_i < _a.length)) return [3 /*break*/, 7];
+                    _b = _a[_i], path_2 = _b[0], file = _b[1];
+                    // console.log(file);
+                    if (file.dir) {
+                        return [3 /*break*/, 6];
+                    }
+                    if (!file.name.endsWith('.ts')) return [3 /*break*/, 6];
+                    console.log('linting ts file ' + file.name);
+                    return [4 /*yield*/, file.async('string')];
+                case 2:
+                    content = _c.sent();
+                    filePath = file.name;
+                    _c.label = 3;
+                case 3:
+                    _c.trys.push([3, 5, , 6]);
+                    console.log(resultCount++);
+                    return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
+                case 4:
+                    results = _c.sent();
+                    console.log(results);
+                    // lintResults.push({ filePath, lintResults: results });
+                    totalIssues += results[0].errorCount + results[0].warningCount;
+                    return [3 /*break*/, 6];
+                case 5:
+                    error_4 = _c.sent();
+                    console.error("Error linting ".concat(filePath, ":"), error_4);
+                    return [3 /*break*/, 6];
+                case 6:
+                    _i++;
+                    return [3 /*break*/, 1];
+                case 7: 
+                // const lintTsFilesRecursively = async (zip: JSZip, folderPath: string = ''): Promise<void> => {
+                //   console.log(folderPath);
+                //   zip.forEach(async (relativePath: string, zipEntry: JSZip.JSZipObject) => {
+                //     // const fullPath = folderPath ? `${folderPath}/${relativePath}` : relativePath;
+                //     const fullPath = folderPath ? path.join(folderPath, relativePath): relativePath;
+                //     if (zipEntry.dir) {
+                //       // Recursively lint files in directories
+                //       const subZip = zip.folder(relativePath);
+                //       // console.log(subZip);
+                //       if (!subZip) {
+                //         console.error(`Error finding subfolder ${fullPath} in zip`);
+                //         return;
+                //       }
+                //       await lintTsFilesRecursively(subZip, fullPath);
+                //     } else if (relativePath.endsWith('.ts')) {
+                //       // Lint TypeScript file
+                //       console.log('linting ts file ' + fullPath)
+                //       console.log(fullPath);
+                //       const content = await zipEntry.async('string');
+                //       const filePath = fullPath;
+                //       try {
+                //         console.log(resultCount++)
+                //         const results = await eslint.lintText(content, { filePath });
+                //         console.log(results);
+                //         // lintResults.push({ filePath, lintResults: results });
+                //         totalIssues += results[0].errorCount + results[0].warningCount;
+                //       } catch (error) {
+                //         console.error(`Error linting ${filePath}:`, error);
+                //       }
+                //     }
+                //   });
+                // };
+                // await lintTsFilesRecursively(zip);
+                return [2 /*return*/, totalIssues];
             }
         });
     });

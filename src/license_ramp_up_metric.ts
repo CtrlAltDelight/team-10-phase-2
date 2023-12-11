@@ -258,99 +258,33 @@ export async function license_ramp_up_metric(repoURL: string): Promise<number[]>
     return([license_met, ramp_up_met, correctness_met]); 
 }
 
-// export function zipfindAllFiles(loadedZip: JSZip): string[] {
-//   const allFiles: string[] = []; 
-//   // const codeExtensions = ['.ts']; //NEED TP MAKE THIS WORK FOR ALL DIFFERENT TYPES OF FILES BUT RIGHT NOW IT ONLY GOES THROUGH .TS FILES 
-//   // inherited from team 9 phase 1
-//   const codeExtensions = ['ts', 'tsx', 'js', 'jsx']
-//   // updated with additional file extensions to resolve team-9 TODO
-//   // function traverseDirectory(currentDir: string) {
-//   //   const files = fs.readdirSync(currentDir);
-//   //   for (const file of files) {
-//   //     const filePath = join(currentDir, file);
-//   //     const stats = fs.statSync(filePath);
-//   //     if (stats.isDirectory()) {
-//   //       // Recursively traverse subdirectories
-//   //       traverseDirectory(filePath);
-//   //     } else if (codeExtensions.includes(extname(filePath))) {
-//   //       allFiles.push(filePath);
-//   //     }
-//   //   }
-
-//   // traverseDirectory(directory);
-  
-//   //populates fullPath with all files matching the codeExtensions, recursively checking subdirectories
-//   function traverseDirectory(currentDir: JSZip, currentPath: string = '') {
-//     currentDir.forEach((relativePath, file) => {
-//       const fullPath = currentPath ? `${currentPath}/${relativePath}` : relativePath;
-//       if (file.dir) {
-//         traverseDirectory(file, fullPath);
-//       } else {
-//         if (relativePath.startsWith(".") || // skip dotfiles
-//           relativePath.endsWith(".")) // skip files ending in dot
-//         { 
-//           return; //this feels like a continue, but forEach => is calling function so must return 
-//         }
-//         const ext = relativePath.substring(relativePath.lastIndexOf(".") + 1); //slightly more efficient
-//         if (codeExtensions.includes(ext)) {
-//           allFiles.push(fullPath);
-//         }
-//       }
-//     });
-//   }
-  
-//   return allFiles; 
-// }
-
-
-
-interface TsLintResult {
-  filePath: string;
-  lintResults: ESLint.LintResult[];
-}
-export async function lintTsFilesInZip(zip: JSZip): Promise<number> {
+export async function getIssuesInZip(zip: JSZip): Promise<number>{
   const eslint = new ESLint();
   let totalIssues = 0;
-  let resultCount = 0;
+  
+  for (const [path, file] of Object.entries(zip.files)) {
+    // console.log(file);
+    if (file.dir) {
+      continue;
+    }
+    if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
+      console.log('linting ts file ' + file.name)
+      const content = await file.async('string');
+      const filePath = file.name;
 
-  const lintTsFilesRecursively = async (zip: JSZip, folderPath: string = ''): Promise<void> => {
-    console.log(folderPath);
+      try {
+        const results = await eslint.lintText(content, { filePath });
+        // console.log(results);
 
-    for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
-      const fullPath = path.join(folderPath, relativePath);
-
-      if (zipEntry.dir) {
-        // Recursively lint files in directories
-        const subZip = zip.folder(relativePath);
-        if (!subZip) {
-          console.error(`Error finding subfolder ${fullPath} in zip`);
-          return;
-        }
-        await lintTsFilesRecursively(subZip, fullPath);
-      } else if (relativePath.endsWith('.ts')) {
-        // Lint TypeScript file
-        console.log('Linting ts file ' + fullPath);
-        console.log(fullPath);
-        const content = await zipEntry.async('string');
-        const filePath = fullPath;
-
-        try {
-          console.log(resultCount++);
-          const results = await eslint.lintText(content, { filePath });
-          console.log(results);
-          // lintResults.push({ filePath, lintResults: results });
-          totalIssues += results[0].errorCount + results[0].warningCount;
-        } catch (error) {
-          console.error(`Error linting ${filePath}:`, error);
-        }
+        totalIssues += results[0].errorCount + results[0].warningCount;
+      } catch (error) {
+        console.error(`Error linting ${filePath}:`, error);
       }
     }
-  };
+  }
 
-  await lintTsFilesRecursively(zip);
   return totalIssues;
 }
-
 
 
 export async function zip_calculate_correctness_metric(loadedZip: JSZip): Promise<number> {
@@ -359,7 +293,7 @@ export async function zip_calculate_correctness_metric(loadedZip: JSZip): Promis
     // const eslint = new ESLint();
 
     // Get a list of Typescript files in the ZIP
-    const lintResults = await lintTsFilesInZip(loadedZip);
+    const lintResults = await getIssuesInZip(loadedZip);
     return 0;
   } catch (error) {
     console.error('Error running ESLint:', error);
