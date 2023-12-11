@@ -80,7 +80,7 @@ async function getAllPackages(offset: number) {
   try {
     const data = await dynamodb.scan(params).promise();
     console.log(data);
-    if (data.Items.length == 0) {
+    if (!data.Items || data.Items.length == 0) {
       return;
     }
 
@@ -105,7 +105,7 @@ async function getPackages(pkgQuery: any[]) {
   try {
     const data = await dynamodb.scan(params).promise();
     console.log(data);
-    if (data.Items.length == 0) {
+    if (!data.Items || data.Items.length == 0) {
       return;
     }
 
@@ -150,7 +150,7 @@ async function resetDynamoDB() {
     try {
         const data = await dynamodb.scan(params).promise();
         console.log(data);
-        if (data.Items.length == 0) {
+        if (!data.Items || data.Items.length == 0) {
             return;
         }
 
@@ -180,7 +180,7 @@ async function resetS3Bucket() {
     try {
         const data = await s3.listObjects(params).promise();
         console.log(data);
-        if (data.Contents.length == 0) {
+        if (!data.Contents || data.Contents.length == 0) {
             return;
         }
 
@@ -569,6 +569,13 @@ app.post('/package', async (req: any, res: any) => {
         // Content is a base64 encoded string
         packageBuf = Buffer.from(Content, 'base64');
     }
+
+    if (!packageBuf) {
+        res.status(400).json({ message: 'There is missing field(s) in the PackageData/AuthenticationToken \
+                                          or it is formed improperly (e.g. Content and URL are both set), or\
+                                           the AuthenticationToken is invalid.' });
+        return;
+    }
     console.log('BODY');
     console.log(packageBuf);
 
@@ -653,10 +660,14 @@ async function findPackageJSON(loadedZip: JSZip) {
 
         if (pathParts.length == 2 && pathParts[1] === 'package.json') {
             console.log('I GOT HERE');
-            const packageInfo = await loadedZip.file(relativePath).async('text');
-            console.log('packageInfo');
-            console.log(packageInfo);
-            return packageInfo;
+            const packageJSONfile = loadedZip.file(relativePath)
+            if (packageJSONfile) {
+                const packageJSONcontents = await packageJSONfile.async('text');
+                console.log('packageJSONcontents');
+                return packageJSONcontents;
+            } else {
+                throw new Error('package.json file not found');
+            }
         }
     }
 
@@ -674,10 +685,16 @@ async function findReadme(loadedZip: JSZip) {
 
         if (pathParts.length == 2 && (pathParts[1] === 'README.md' || pathParts[1] === 'readme.md')) {
             console.log('I GOT HERE');
-            const readme = await loadedZip.file(relativePath).async('text');
-            console.log('readme');
-            console.log(readme);
-            return readme;
+            const readmeFile = loadedZip.file(relativePath)
+            if (readmeFile) {
+                const readme = await readmeFile.async('text');
+                console.log('readme');
+                console.log(readme);
+                return readme;
+            } else {
+                console.log('no readme found')
+                return "";
+            }
         }
     }
 
