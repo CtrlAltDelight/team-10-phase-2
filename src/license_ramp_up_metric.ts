@@ -308,19 +308,20 @@ interface TsLintResult {
   filePath: string;
   lintResults: ESLint.LintResult[];
 }
-export async function lintTsFilesInZip(zip: JSZip): Promise<number>{
+export async function lintTsFilesInZip(zip: JSZip): Promise<number> {
   const eslint = new ESLint();
   let totalIssues = 0;
   let resultCount = 0;
+
   const lintTsFilesRecursively = async (zip: JSZip, folderPath: string = ''): Promise<void> => {
     console.log(folderPath);
+
     for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
-      // const fullPath = folderPath ? `${folderPath}/${relativePath}` : relativePath;
-      const fullPath = folderPath ? path.join(folderPath, relativePath): relativePath;
+      const fullPath = path.join(folderPath, relativePath);
+
       if (zipEntry.dir) {
         // Recursively lint files in directories
         const subZip = zip.folder(relativePath);
-        // console.log(subZip);
         if (!subZip) {
           console.error(`Error finding subfolder ${fullPath} in zip`);
           return;
@@ -328,13 +329,13 @@ export async function lintTsFilesInZip(zip: JSZip): Promise<number>{
         await lintTsFilesRecursively(subZip, fullPath);
       } else if (relativePath.endsWith('.ts')) {
         // Lint TypeScript file
-        console.log('linting ts file ' + fullPath)
+        console.log('Linting ts file ' + fullPath);
         console.log(fullPath);
         const content = await zipEntry.async('string');
         const filePath = fullPath;
 
         try {
-          console.log(resultCount++)
+          console.log(resultCount++);
           const results = await eslint.lintText(content, { filePath });
           console.log(results);
           // lintResults.push({ filePath, lintResults: results });
@@ -343,12 +344,13 @@ export async function lintTsFilesInZip(zip: JSZip): Promise<number>{
           console.error(`Error linting ${filePath}:`, error);
         }
       }
-    };
-
+    }
   };
+
   await lintTsFilesRecursively(zip);
   return totalIssues;
 }
+
 
 
 export async function zip_calculate_correctness_metric(loadedZip: JSZip): Promise<number> {
