@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
-import { license_ramp_up_metric } from './license_ramp_up_metric';
+import { zip_license_ramp_up_metric, license_ramp_up_metric } from './license_ramp_up_metric';
 import { bus_factor_maintainer_metric } from './bus_factor_maintainer_metric';
 import * as dotenv from 'dotenv';
 import * as winston from 'winston';
 import { exit } from 'process';
+import JSZip = require('jszip');
+import { Console } from 'console';
 
 // Function to process URL_FILE and produce NDJSON output
 export async function processUrls(urlFile: string) {
@@ -84,12 +86,14 @@ const args = process.argv.slice(2);
 dotenv.config();
 
 if (process.env.GITHUB_TOKEN === undefined || process.env.GITHUB_TOKEN === '') {
+  console.log('Please set the GITHUB_TOKEN environment variable.');
   exit(1);
 }
 
 let logFile: string;
 
 if (process.env.LOG_FILE === undefined || process.env.LOG_FILE === '') {
+  console.log('Please set the LOG_FILE environment variable.');
   exit(1);
 } else {
   logFile = process.env.LOG_FILE;
@@ -131,10 +135,24 @@ fs.access(logFile, fs.constants.W_OK, (err) => {
 });
 
 export default logger;
-
+// console.log(args)
 if(args[0] == 'test')
 {
     runTests('./jest.log.txt');
+}
+else if (args[0] == 'b64') {
+  // console.log(args[1]);
+  console.log({'level': 'error', 'message': `No file specified.`});
+  const packageBuf = Buffer.from(args[1], 'base64');
+  // console.log(packageBuf);
+  const zip = new JSZip();
+  zip.loadAsync(packageBuf)
+    .then(loadZip => {
+      const sourceMetrics = zip_license_ramp_up_metric(loadZip);
+    })
+    .catch(error => {
+      console.error(`Error loading zip file: ${error}`);
+    });
 }
 else if(args[0] !== undefined)
 {
