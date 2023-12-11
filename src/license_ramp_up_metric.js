@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.zip_license_ramp_up_metric = exports.zip_calculate_correctness_metric = exports.license_ramp_up_metric = exports.calculate_correctness_metric = exports.findAllFiles = exports.calculate_ramp_up_metric = exports.countWords = exports.findGitHubRepoUrl = void 0;
+exports.zip_license_ramp_up_metric = exports.zip_calculate_correctness_metric = exports.lintTsFilesInZip = exports.license_ramp_up_metric = exports.calculate_correctness_metric = exports.findAllFiles = exports.calculate_ramp_up_metric = exports.countWords = exports.findGitHubRepoUrl = void 0;
 var run_1 = require("./run");
 var fs = require("fs");
 var fse = require("fs-extra");
@@ -47,6 +47,7 @@ var axios_1 = require("axios");
 var tmp = require("tmp");
 var eslint_1 = require("eslint");
 var path_1 = require("path");
+var path = require("path");
 var compatibleLicenses = [
     'mit license',
     'bsd 2-clause "simplified" license',
@@ -321,80 +322,80 @@ function license_ramp_up_metric(repoURL) {
     });
 }
 exports.license_ramp_up_metric = license_ramp_up_metric;
-var lintTsFilesInZip = function (zip) { return __awaiter(void 0, void 0, void 0, function () {
-    var eslint, lintResults, totalIssues, count, resultCount, lintTsFilesRecursively;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                eslint = new eslint_1.ESLint();
-                console.log('b');
-                lintResults = [];
-                totalIssues = 0;
-                count = 0;
-                resultCount = 0;
-                lintTsFilesRecursively = function (zip, folderPath) {
-                    if (folderPath === void 0) { folderPath = ''; }
-                    return __awaiter(void 0, void 0, void 0, function () {
-                        return __generator(this, function (_a) {
-                            // count += 1;
-                            // console.log(count);
-                            // console.log(folderPath);
-                            zip.forEach(function (relativePath, zipEntry) { return __awaiter(void 0, void 0, void 0, function () {
-                                var fullPath, subZip, content, filePath, results, error_4;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            fullPath = folderPath ? "".concat(folderPath, "/").concat(relativePath) : relativePath;
-                                            if (!zipEntry.dir) return [3 /*break*/, 2];
-                                            subZip = zip.folder(relativePath);
-                                            // console.log(subZip);
-                                            if (!subZip) {
-                                                console.error("Error finding subfolder ".concat(fullPath, " in zip"));
-                                                return [2 /*return*/];
-                                            }
-                                            return [4 /*yield*/, lintTsFilesRecursively(subZip, fullPath)];
-                                        case 1:
-                                            _a.sent();
-                                            return [3 /*break*/, 7];
-                                        case 2:
-                                            if (!relativePath.endsWith('.ts')) return [3 /*break*/, 7];
-                                            // Lint TypeScript file
-                                            console.log('linting ts file ' + fullPath);
-                                            console.log(fullPath);
-                                            return [4 /*yield*/, zipEntry.async('string')];
-                                        case 3:
-                                            content = _a.sent();
-                                            filePath = fullPath;
-                                            _a.label = 4;
-                                        case 4:
-                                            _a.trys.push([4, 6, , 7]);
-                                            console.log(resultCount++);
-                                            return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
-                                        case 5:
-                                            results = _a.sent();
-                                            console.log(results);
-                                            // lintResults.push({ filePath, lintResults: results });
-                                            totalIssues += results[0].errorCount + results[0].warningCount;
-                                            return [3 /*break*/, 7];
-                                        case 6:
-                                            error_4 = _a.sent();
-                                            console.error("Error linting ".concat(filePath, ":"), error_4);
-                                            return [3 /*break*/, 7];
-                                        case 7: return [2 /*return*/];
-                                    }
-                                });
-                            }); });
-                            return [2 /*return*/];
+function lintTsFilesInZip(zip) {
+    return __awaiter(this, void 0, void 0, function () {
+        var eslint, totalIssues, resultCount, lintTsFilesRecursively;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    eslint = new eslint_1.ESLint();
+                    totalIssues = 0;
+                    resultCount = 0;
+                    lintTsFilesRecursively = function (zip, folderPath) {
+                        if (folderPath === void 0) { folderPath = ''; }
+                        return __awaiter(_this, void 0, void 0, function () {
+                            var _this = this;
+                            return __generator(this, function (_a) {
+                                console.log(folderPath);
+                                zip.forEach(function (relativePath, zipEntry) { return __awaiter(_this, void 0, void 0, function () {
+                                    var fullPath, subZip, content, filePath, results, error_4;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                fullPath = folderPath ? path.join(folderPath, relativePath) : relativePath;
+                                                if (!zipEntry.dir) return [3 /*break*/, 2];
+                                                subZip = zip.folder(relativePath);
+                                                // console.log(subZip);
+                                                if (!subZip) {
+                                                    console.error("Error finding subfolder ".concat(fullPath, " in zip"));
+                                                    return [2 /*return*/];
+                                                }
+                                                return [4 /*yield*/, lintTsFilesRecursively(subZip, fullPath)];
+                                            case 1:
+                                                _a.sent();
+                                                return [3 /*break*/, 7];
+                                            case 2:
+                                                if (!relativePath.endsWith('.ts')) return [3 /*break*/, 7];
+                                                // Lint TypeScript file
+                                                console.log('linting ts file ' + fullPath);
+                                                console.log(fullPath);
+                                                return [4 /*yield*/, zipEntry.async('string')];
+                                            case 3:
+                                                content = _a.sent();
+                                                filePath = fullPath;
+                                                _a.label = 4;
+                                            case 4:
+                                                _a.trys.push([4, 6, , 7]);
+                                                console.log(resultCount++);
+                                                return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
+                                            case 5:
+                                                results = _a.sent();
+                                                console.log(results);
+                                                // lintResults.push({ filePath, lintResults: results });
+                                                totalIssues += results[0].errorCount + results[0].warningCount;
+                                                return [3 /*break*/, 7];
+                                            case 6:
+                                                error_4 = _a.sent();
+                                                console.error("Error linting ".concat(filePath, ":"), error_4);
+                                                return [3 /*break*/, 7];
+                                            case 7: return [2 /*return*/];
+                                        }
+                                    });
+                                }); });
+                                return [2 /*return*/];
+                            });
                         });
-                    });
-                };
-                return [4 /*yield*/, lintTsFilesRecursively(zip)];
-            case 1:
-                _a.sent();
-                return [2 /*return*/, lintResults];
-        }
+                    };
+                    return [4 /*yield*/, lintTsFilesRecursively(zip)];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/, totalIssues];
+            }
+        });
     });
-}); };
+}
+exports.lintTsFilesInZip = lintTsFilesInZip;
 function zip_calculate_correctness_metric(loadedZip) {
     return __awaiter(this, void 0, void 0, function () {
         var lintResults, error_5;

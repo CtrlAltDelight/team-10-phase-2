@@ -9,11 +9,12 @@ import * as tmp from 'tmp';
 import { Linter, ESLint} from 'eslint'; 
 import { join, extname } from 'path'; 
 import JSZip = require('jszip');
+import * as path from 'path';
 
 const compatibleLicenses = [
-    'mit license', 
-    'bsd 2-clause "simplified" license', 
-    /(mit.*license|license.*mit)/i,
+  'mit license', 
+  'bsd 2-clause "simplified" license', 
+  /(mit.*license|license.*mit)/i,
 ]; //inherited
 
 const licensesRegex = [
@@ -314,7 +315,8 @@ export async function lintTsFilesInZip(zip: JSZip): Promise<number>{
   const lintTsFilesRecursively = async (zip: JSZip, folderPath: string = ''): Promise<void> => {
     console.log(folderPath);
     zip.forEach(async (relativePath: string, zipEntry: JSZip.JSZipObject) => {
-      const fullPath = folderPath ? `${folderPath}/${relativePath}` : relativePath;
+      // const fullPath = folderPath ? `${folderPath}/${relativePath}` : relativePath;
+      const fullPath = folderPath ? path.join(folderPath, relativePath): relativePath;
       if (zipEntry.dir) {
         // Recursively lint files in directories
         const subZip = zip.folder(relativePath);
