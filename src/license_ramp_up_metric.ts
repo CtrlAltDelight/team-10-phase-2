@@ -293,8 +293,10 @@ export async function zip_calculate_correctness_metric(loadedZip: JSZip): Promis
     // const eslint = new ESLint();
 
     // Get a list of Typescript files in the ZIP
-    const lintResults = await getIssuesInZip(loadedZip);
-    return 0;
+    const totalIssues = await getIssuesInZip(loadedZip);
+
+    const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
+    return lintScore;
   } catch (error) {
     console.error('Error running ESLint:', error);
     return 0; // Return 0 in case of an error
