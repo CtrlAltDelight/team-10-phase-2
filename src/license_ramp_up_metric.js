@@ -335,55 +335,56 @@ function lintTsFilesInZip(zip) {
                     lintTsFilesRecursively = function (zip, folderPath) {
                         if (folderPath === void 0) { folderPath = ''; }
                         return __awaiter(_this, void 0, void 0, function () {
-                            var _this = this;
-                            return __generator(this, function (_a) {
-                                console.log(folderPath);
-                                zip.forEach(function (relativePath, zipEntry) { return __awaiter(_this, void 0, void 0, function () {
-                                    var fullPath, subZip, content, filePath, results, error_4;
-                                    return __generator(this, function (_a) {
-                                        switch (_a.label) {
-                                            case 0:
-                                                fullPath = folderPath ? path.join(folderPath, relativePath) : relativePath;
-                                                if (!zipEntry.dir) return [3 /*break*/, 2];
-                                                subZip = zip.folder(relativePath);
-                                                // console.log(subZip);
-                                                if (!subZip) {
-                                                    console.error("Error finding subfolder ".concat(fullPath, " in zip"));
-                                                    return [2 /*return*/];
-                                                }
-                                                return [4 /*yield*/, lintTsFilesRecursively(subZip, fullPath)];
-                                            case 1:
-                                                _a.sent();
-                                                return [3 /*break*/, 7];
-                                            case 2:
-                                                if (!relativePath.endsWith('.ts')) return [3 /*break*/, 7];
-                                                // Lint TypeScript file
-                                                console.log('linting ts file ' + fullPath);
-                                                console.log(fullPath);
-                                                return [4 /*yield*/, zipEntry.async('string')];
-                                            case 3:
-                                                content = _a.sent();
-                                                filePath = fullPath;
-                                                _a.label = 4;
-                                            case 4:
-                                                _a.trys.push([4, 6, , 7]);
-                                                console.log(resultCount++);
-                                                return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
-                                            case 5:
-                                                results = _a.sent();
-                                                console.log(results);
-                                                // lintResults.push({ filePath, lintResults: results });
-                                                totalIssues += results[0].errorCount + results[0].warningCount;
-                                                return [3 /*break*/, 7];
-                                            case 6:
-                                                error_4 = _a.sent();
-                                                console.error("Error linting ".concat(filePath, ":"), error_4);
-                                                return [3 /*break*/, 7];
-                                            case 7: return [2 /*return*/];
+                            var _i, _a, _b, relativePath, zipEntry, fullPath, subZip, content, filePath, results, error_4;
+                            return __generator(this, function (_c) {
+                                switch (_c.label) {
+                                    case 0:
+                                        console.log(folderPath);
+                                        _i = 0, _a = Object.entries(zip.files);
+                                        _c.label = 1;
+                                    case 1:
+                                        if (!(_i < _a.length)) return [3 /*break*/, 9];
+                                        _b = _a[_i], relativePath = _b[0], zipEntry = _b[1];
+                                        fullPath = path.join(folderPath, relativePath);
+                                        if (!zipEntry.dir) return [3 /*break*/, 3];
+                                        subZip = zip.folder(relativePath);
+                                        if (!subZip) {
+                                            console.error("Error finding subfolder ".concat(fullPath, " in zip"));
+                                            return [2 /*return*/];
                                         }
-                                    });
-                                }); });
-                                return [2 /*return*/];
+                                        return [4 /*yield*/, lintTsFilesRecursively(subZip, fullPath)];
+                                    case 2:
+                                        _c.sent();
+                                        return [3 /*break*/, 8];
+                                    case 3:
+                                        if (!relativePath.endsWith('.ts')) return [3 /*break*/, 8];
+                                        // Lint TypeScript file
+                                        console.log('Linting ts file ' + fullPath);
+                                        console.log(fullPath);
+                                        return [4 /*yield*/, zipEntry.async('string')];
+                                    case 4:
+                                        content = _c.sent();
+                                        filePath = fullPath;
+                                        _c.label = 5;
+                                    case 5:
+                                        _c.trys.push([5, 7, , 8]);
+                                        console.log(resultCount++);
+                                        return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
+                                    case 6:
+                                        results = _c.sent();
+                                        console.log(results);
+                                        // lintResults.push({ filePath, lintResults: results });
+                                        totalIssues += results[0].errorCount + results[0].warningCount;
+                                        return [3 /*break*/, 8];
+                                    case 7:
+                                        error_4 = _c.sent();
+                                        console.error("Error linting ".concat(filePath, ":"), error_4);
+                                        return [3 /*break*/, 8];
+                                    case 8:
+                                        _i++;
+                                        return [3 /*break*/, 1];
+                                    case 9: return [2 /*return*/];
+                                }
                             });
                         });
                     };

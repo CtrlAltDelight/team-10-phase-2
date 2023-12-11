@@ -314,7 +314,7 @@ export async function lintTsFilesInZip(zip: JSZip): Promise<number>{
   let resultCount = 0;
   const lintTsFilesRecursively = async (zip: JSZip, folderPath: string = ''): Promise<void> => {
     console.log(folderPath);
-    zip.forEach(async (relativePath: string, zipEntry: JSZip.JSZipObject) => {
+    for (const [relativePath, zipEntry] of Object.entries(zip.files)) {
       // const fullPath = folderPath ? `${folderPath}/${relativePath}` : relativePath;
       const fullPath = folderPath ? path.join(folderPath, relativePath): relativePath;
       if (zipEntry.dir) {
@@ -343,7 +343,7 @@ export async function lintTsFilesInZip(zip: JSZip): Promise<number>{
           console.error(`Error linting ${filePath}:`, error);
         }
       }
-    });
+    };
 
   };
   await lintTsFilesRecursively(zip);
