@@ -139,15 +139,16 @@ function calcResponsiveMaintainer(owner, repo) {
         responsive_maintainer += Math.min(0.5, lastPage / 15);
         // Make GraphQL query to GitHub API to get date of (up to 5) most recent pull requests to calculate part of responsive maintainer metric
         const query = `
-    {
-      repository(owner: "${owner}", name: "${repo}") {
-        pullRequests(last: 3, orderBy: {field: CREATED_AT, direction: DESC}) {
-          nodes {
-            createdAt
-          }
+  {
+    repository(owner: "${owner}", name: "${repo}") {
+      pullRequests(last: 3, orderBy: {field: CREATED_AT, direction: DESC}) {
+        nodes {
+          createdAt
+        }
       }
     }
-  `;
+  }
+`;
         const gqlResponse = yield fetchGraphQL(query).catch((error) => {
             return null;
         });
