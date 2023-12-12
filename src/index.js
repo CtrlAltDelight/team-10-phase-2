@@ -25,11 +25,11 @@ const handler = (event) => __awaiter(void 0, void 0, void 0, function* () {
             };
         }
         // Call run.ts passing arguments
-        yield (0, run_1.run)(argsJSON);
+        let metrics = yield (0, run_1.run)(argsJSON);
         return {
             statusCode: 200,
             body: JSON.stringify({
-                message: 'Run completed'
+                metrics: metrics
             })
         };
     }

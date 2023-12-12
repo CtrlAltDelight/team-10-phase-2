@@ -18,12 +18,12 @@ export const handler = async (
       };
     }
     // Call run.ts passing arguments
-    await run(argsJSON);
+    let metrics = await run(argsJSON);
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Run completed'
+        metrics: metrics
       })
     };
   } catch (error) {

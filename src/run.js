@@ -191,7 +191,7 @@ function run(args) {
             zip.loadAsync(packageBuf)
                 .then(loadZip => {
                 const sourceMetrics = (0, license_ramp_up_metric_1.zip_license_ramp_up_metric)(loadZip);
-                console.log(sourceMetrics);
+                return sourceMetrics;
             })
                 .catch(error => {
                 console.error(`Error loading zip file: ${error}`);
