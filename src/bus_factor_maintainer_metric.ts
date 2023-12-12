@@ -153,7 +153,7 @@ export async function calcResponsiveMaintainer(owner: string, repo: string): Pro
   gqlResponse.repository.pullRequests.nodes.forEach((pullRequest: any) => {
     const daysSince = Math.floor((new Date().getTime() - new Date(pullRequest.createdAt).getTime()) / (1000 * 3600 * 24));
     responsive_maintainer += 0.1 * Math.min(14 / Math.max(daysSince, 14), 1);
-    console.log({'level': 'info', 'message': `Pull request created at: ${pullRequest.createdAt}`});
+    // console.log({'level': 'info', 'message': `Pull request created at: ${pullRequest.createdAt}`});
   });
 
   return responsive_maintainer;
@@ -300,7 +300,7 @@ export async function bus_factor_maintainer_metric(repoURL: string) : Promise<nu
 	let url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
 	let sections = url.split('/');
 	if (sections[0] === 'npmjs.com') {
-		console.log({'level': 'info', 'message': `npmjs package: ${sections[2]}`});
+		// console.log({'level': 'info', 'message': `npmjs package: ${sections[2]}`});
 		// Find the GitHub URL for the package
 		repoURL = await findGitHubRepoUrl(sections[2]);
 		if (repoURL === 'none') {
@@ -319,8 +319,8 @@ export async function bus_factor_maintainer_metric(repoURL: string) : Promise<nu
 		return null;
 	}
 
-	console.log({'level': 'info', 'message': `GitHub URL: ${repoURL}`});
-  console.log({'level': 'info', 'message': `GitHub owner: ${sections[1]}, GitHub repo: ${sections[2]}`});
+	// console.log({'level': 'info', 'message': `GitHub URL: ${repoURL}`});
+  // console.log({'level': 'info', 'message': `GitHub owner: ${sections[1]}, GitHub repo: ${sections[2]}`});
 
 	// Calculate bus factor metric
   bus_factor = await calcBusFactor(sections[1], sections[2]);

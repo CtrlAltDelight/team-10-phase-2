@@ -101,21 +101,21 @@ function cloneRepository(repoUrl, localPath) {
 }
 function findGitHubRepoUrl(packageName) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`Finding GitHub repository URL for ${packageName}`);
+        // console.log(`Finding GitHub repository URL for ${packageName}`)
         try {
             // Fetch package metadata from the npm registry
-            console.log(process.version);
+            // console.log(process.version)
             const response = yield axios_1.default.get(`https://registry.npmjs.org/${packageName}`);
-            console.log("got here");
-            console.log(response);
-            console.log(response.status);
+            // console.log("got here")
+            // console.log(response);
+            // console.log(response.status);
             if (response.status !== 200) {
                 console.log({ 'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}` });
                 return 'none';
             }
             // Parse the response JSON
             const packageMetadata = response.data;
-            console.log(packageMetadata);
+            // console.log(packageMetadata);
             //console.log(packageMetadata.repository);
             //console.log(packageMetadata.repository.url);
             // Check if the "repository" field exists in the package.json
@@ -266,7 +266,7 @@ function getIssuesInZip(zip) {
                 continue;
             }
             if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
-                console.log('linting ts file ' + file.name);
+                // console.log('linting ts file ' + file.name)
                 const content = yield file.async('string');
                 const filePath = file.name;
                 try {
@@ -306,7 +306,7 @@ function zip_license_ramp_up_metric(loadedZip) {
         let license_met = 0;
         let ramp_up_met = 0;
         let correctness_met = 0;
-        console.log('a');
+        // console.log('a');
         const readmeFiles = loadedZip.file(/readme\.md|readme\.markdown/i);
         if (!readmeFiles) {
             console.log({ 'level': 'error', 'message': `No README file found in the zip file.` });
