@@ -16,6 +16,7 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const express_1 = __importDefault(require("express"));
 const axios_1 = __importDefault(require("axios"));
 const jszip_1 = __importDefault(require("jszip"));
+const bus_factor_maintainer_metric_1 = require("./metrics/bus_factor_maintainer_metric");
 aws_sdk_1.default.config.update({ region: process.env.TABLE_REGION });
 const dynamodb = new aws_sdk_1.default.DynamoDB.DocumentClient();
 const s3 = new aws_sdk_1.default.S3();
@@ -525,6 +526,9 @@ app.post('/package', async (req, res) => {
     const s3Key = `${packageName}-${packageVersion}.zip`;
     const ContentStore = Content || (URL && packageBuf.toString('base64'));
     const URLStore = URL || (Content && parsedPackageJSON.repository.url);
+    if (URL) {
+        console.log((0, bus_factor_maintainer_metric_1.bus_factor_maintainer_metric)(URL));
+    }
     const params = {
         Bucket: s3BucketName,
         Key: s3Key,
