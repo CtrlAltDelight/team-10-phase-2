@@ -9,50 +9,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.zip_license_ramp_up_metric = exports.zip_calculate_correctness_metric = exports.lintTsFilesInZip = exports.license_ramp_up_metric = exports.calculate_correctness_metric = exports.findAllFiles = exports.calculate_ramp_up_metric = exports.countWords = exports.findGitHubRepoUrl = void 0;
-var run_1 = require("./run");
-var fs = require("fs");
-var fse = require("fs-extra");
-var isomorphic_git_1 = require("isomorphic-git");
-var node_1 = require("isomorphic-git/http/node");
-var axios_1 = require("axios");
-var tmp = require("tmp");
-var eslint_1 = require("eslint");
-var path_1 = require("path");
-var compatibleLicenses = [
+exports.zip_license_ramp_up_metric = exports.zip_calculate_correctness_metric = exports.getIssuesInZip = exports.license_ramp_up_metric = exports.calculate_correctness_metric = exports.findAllFiles = exports.calculate_ramp_up_metric = exports.countWords = exports.findGitHubRepoUrl = void 0;
+const fs = require("fs");
+const fse = require("fs-extra");
+const isomorphic_git_1 = require("isomorphic-git");
+const node_1 = require("isomorphic-git/http/node");
+const axios_1 = require("axios");
+const tmp = require("tmp");
+const eslint_1 = require("eslint");
+const path_1 = require("path");
+const compatibleLicenses = [
     'mit license',
     'bsd 2-clause "simplified" license',
     /(mit.*license|license.*mit)/i,
 ]; //inherited
-var licensesRegex = [
+const licensesRegex = [
     /gpl/i,
     /gnu lesser general public license/i,
     /gnu general public license/i,
@@ -109,93 +81,81 @@ var licensesRegex = [
     /zlib/i,
     /zope/i,
 ]; //team 10 phase 1
-var concatLicense = compatibleLicenses.concat(licensesRegex);
+const concatLicense = compatibleLicenses.concat(licensesRegex);
 function cloneRepository(repoUrl, localPath) {
-    return __awaiter(this, void 0, void 0, function () {
-        var error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    // Clone the repository
-                    return [4 /*yield*/, isomorphic_git_1.default.clone({
-                            fs: fs,
-                            http: node_1.default,
-                            dir: localPath,
-                            url: repoUrl,
-                        })];
-                case 1:
-                    // Clone the repository
-                    _a.sent();
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_1 = _a.sent();
-                    run_1.default.log({ 'level': 'error', 'message': "".concat(error_1) });
-                    return [3 /*break*/, 3];
-                case 3: return [2 /*return*/];
-            }
-        });
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Clone the repository
+            yield isomorphic_git_1.default.clone({
+                fs,
+                http: node_1.default,
+                dir: localPath,
+                url: repoUrl,
+            });
+            //console.log('Repository cloned successfully.');
+        }
+        catch (error) {
+            console.log({ 'level': 'error', 'message': `${error}` });
+        }
     });
 }
 function findGitHubRepoUrl(packageName) {
-    return __awaiter(this, void 0, void 0, function () {
-        var response, packageMetadata, error_2;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, axios_1.default.get("https://registry.npmjs.org/".concat(packageName))];
-                case 1:
-                    response = _a.sent();
-                    if (response.status !== 200) {
-                        run_1.default.log({ 'level': 'error', 'message': "Failed to fetch package metadata for ".concat(packageName) });
-                        return [2 /*return*/, 'none'];
-                    }
-                    packageMetadata = response.data;
-                    //console.log(packageMetadata.repository);
-                    //console.log(packageMetadata.repository.url);
-                    // Check if the "repository" field exists in the package.json
-                    if (packageMetadata.repository && packageMetadata.repository.url) {
-                        return [2 /*return*/, 'https://' + packageMetadata.repository.url.match(/github\.com\/[^/]+\/[^/]+(?=\.git|$)/)];
-                    }
-                    else {
-                        run_1.default.log({ 'level': 'error', 'message': "No repository URL found for ".concat(packageName) });
-                        return [2 /*return*/, 'none'];
-                    }
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_2 = _a.sent();
-                    run_1.default.log({ 'level': 'error', 'message': "".concat(error_2) });
-                    return [2 /*return*/, 'none'];
-                case 3: return [2 /*return*/];
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`Finding GitHub repository URL for ${packageName}`);
+        try {
+            // Fetch package metadata from the npm registry
+            console.log(process.version);
+            const response = yield axios_1.default.get(`https://registry.npmjs.org/${packageName}`);
+            console.log("got here");
+            console.log(response);
+            console.log(response.status);
+            if (response.status !== 200) {
+                console.log({ 'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}` });
+                return 'none';
             }
-        });
+            // Parse the response JSON
+            const packageMetadata = response.data;
+            console.log(packageMetadata);
+            //console.log(packageMetadata.repository);
+            //console.log(packageMetadata.repository.url);
+            // Check if the "repository" field exists in the package.json
+            if (packageMetadata.repository && packageMetadata.repository.url) {
+                return 'https://' + packageMetadata.repository.url.match(/github\.com\/[^/]+\/[^/]+(?=\.git|$)/);
+            }
+            else {
+                console.log({ 'level': 'error', 'message': `No repository URL found for ${packageName}` });
+                return 'none';
+            }
+        }
+        catch (error) {
+            console.log({ 'level': 'error', 'message': `${error}` });
+            return 'none';
+        }
     });
 }
 exports.findGitHubRepoUrl = findGitHubRepoUrl;
 // Function to count words in a string
 function countWords(text) {
-    var words = text.split(/\s+/);
-    var nonEmptyWords = words.filter(function (word) { return word !== ''; });
+    const words = text.split(/\s+/);
+    const nonEmptyWords = words.filter(word => word !== '');
     return nonEmptyWords.length;
 }
 exports.countWords = countWords;
 // Function to calculate the score based on word count
 function calculate_ramp_up_metric(wordCount, maxWordCount) {
-    var maxScore = 1.0; // Maximum score
+    const maxScore = 1.0; // Maximum score
     // Calculate the score based on the word count relative to the max word count
     return Math.min(wordCount / maxWordCount, maxScore);
 }
 exports.calculate_ramp_up_metric = calculate_ramp_up_metric;
 function findAllFiles(directory) {
-    var allFiles = [];
-    var codeExtensions = ['.ts']; //NEED TP MAKE THIS WORK FOR ALL DIFFERENT TYPES OF FILES BUT RIGHT NOW IT ONLY GOES THROUGH .TS FILES
+    const allFiles = [];
+    const codeExtensions = ['.ts']; //NEED TP MAKE THIS WORK FOR ALL DIFFERENT TYPES OF FILES BUT RIGHT NOW IT ONLY GOES THROUGH .TS FILES
     function traverseDirectory(currentDir) {
-        var files = fs.readdirSync(currentDir);
-        for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
-            var file = files_1[_i];
-            var filePath = (0, path_1.join)(currentDir, file);
-            var stats = fs.statSync(filePath);
+        const files = fs.readdirSync(currentDir);
+        for (const file of files) {
+            const filePath = (0, path_1.join)(currentDir, file);
+            const stats = fs.statSync(filePath);
             if (stats.isDirectory()) {
                 // Recursively traverse subdirectories
                 traverseDirectory(filePath);
@@ -210,259 +170,167 @@ function findAllFiles(directory) {
 }
 exports.findAllFiles = findAllFiles;
 function calculate_correctness_metric(filepath) {
-    return __awaiter(this, void 0, void 0, function () {
-        var eslint, allFiles, results, totalIssues, _i, _a, result, lintScore, error_3;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    _b.trys.push([0, 5, , 6]);
-                    eslint = new eslint_1.ESLint();
-                    allFiles = findAllFiles(filepath);
-                    results = eslint.lintFiles(allFiles);
-                    totalIssues = 0;
-                    _i = 0;
-                    return [4 /*yield*/, results];
-                case 1:
-                    _a = _b.sent();
-                    _b.label = 2;
-                case 2:
-                    if (!(_i < _a.length)) return [3 /*break*/, 4];
-                    result = _a[_i];
-                    totalIssues += result.errorCount + result.warningCount;
-                    _b.label = 3;
-                case 3:
-                    _i++;
-                    return [3 /*break*/, 2];
-                case 4:
-                    lintScore = 1 - Math.min(1, totalIssues / 1000.0);
-                    return [2 /*return*/, lintScore];
-                case 5:
-                    error_3 = _b.sent();
-                    //console.error('Error running ESLint:', error);
-                    return [2 /*return*/, 0]; // Return 0 in case of an error
-                case 6: return [2 /*return*/];
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Initailize ESLint
+            const eslint = new eslint_1.ESLint();
+            //Get a list of Typescript files with the cloned directory
+            const allFiles = findAllFiles(filepath);
+            //Lint in Typescript files
+            const results = eslint.lintFiles(allFiles);
+            // Calculate the total number of issues (errors + warnings)
+            let totalIssues = 0;
+            for (const result of yield results) {
+                totalIssues += result.errorCount + result.warningCount;
             }
-        });
+            // Calculate the lint score as a value between 0 and 1
+            const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
+            return lintScore;
+        }
+        catch (error) {
+            //console.error('Error running ESLint:', error);
+            return 0; // Return 0 in case of an error
+        }
     });
 }
 exports.calculate_correctness_metric = calculate_correctness_metric;
 function license_ramp_up_metric(repoURL) {
-    return __awaiter(this, void 0, void 0, function () {
-        var tempDir, repoDir, license_met, ramp_up_met, correctness_met, url, parts, readmePath, readmeContent, _i, compatibleLicenses_1, compatibleLicense, wordCount, maxWordCount;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    tempDir = tmp.dirSync();
-                    repoDir = tempDir.name;
-                    license_met = 0;
-                    ramp_up_met = 0;
-                    correctness_met = 0;
-                    //looks into tmpdir to make a temporay directory and then deleting at the end of the function 
-                    //console.log(repoDir);
-                    fse.ensureDir(repoDir); //will make sure the directory exists or will create a new one
-                    url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
-                    parts = url.split('/');
-                    if (!(parts[0] === 'npmjs.com')) return [3 /*break*/, 2];
-                    return [4 /*yield*/, findGitHubRepoUrl(parts[2])];
-                case 1:
-                    //console.log("This is a npmjs url");
-                    //finds the github url of the npmjs module
-                    //console.log(`This is the npmjs package ${parts[2]}`);
-                    repoURL = _a.sent();
-                    if (repoURL == null) {
-                        //console.log(`This npmjs is not stored in a github repository.`);
-                        return [2 /*return*/, [license_met, ramp_up_met, correctness_met]];
-                    }
-                    _a.label = 2;
-                case 2: 
-                //console.log(repoURL);
-                //probably need to add in something to check if the url is from github just to make sure 
-                return [4 /*yield*/, cloneRepository(repoURL, repoDir)];
-                case 3:
-                    //console.log(repoURL);
-                    //probably need to add in something to check if the url is from github just to make sure 
-                    _a.sent(); //clones the repository
-                    readmePath = "".concat(repoDir, "/Readme.md");
-                    readmeContent = 'none';
-                    if (fs.existsSync(readmePath)) {
-                        readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
-                    }
-                    else {
-                        readmePath = "".concat(repoDir, "/readme.markdown");
-                        if (fs.existsSync(readmePath)) {
-                            readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
-                        }
-                    }
-                    //CALCULATES THE LICENSE SCORE 
-                    for (_i = 0, compatibleLicenses_1 = compatibleLicenses; _i < compatibleLicenses_1.length; _i++) {
-                        compatibleLicense = compatibleLicenses_1[_i];
-                        if (readmeContent.match(compatibleLicense)) {
-                            license_met = 1; //License found was compatible 
-                        }
-                    }
-                    wordCount = countWords(readmeContent);
-                    maxWordCount = 2000;
-                    ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount); //calculates the actual score
-                    return [4 /*yield*/, calculate_correctness_metric(repoDir)];
-                case 4:
-                    //CALUCLATES THE CORRECTNESS SCORE
-                    correctness_met = _a.sent();
-                    //deletes the temporary directory that was made
-                    try {
-                        fse.removeSync(repoDir);
-                        //console.log('Temporary directory deleted.');
-                    }
-                    catch (err) {
-                        run_1.default.log({ 'level': 'error', 'message': "".concat(err) });
-                    }
-                    return [2 /*return*/, ([license_met, ramp_up_met, correctness_met])];
+    return __awaiter(this, void 0, void 0, function* () {
+        const tempDir = tmp.dirSync(); //makes a temporary directory
+        const repoDir = tempDir.name;
+        let license_met = 0;
+        let ramp_up_met = 0;
+        let correctness_met = 0;
+        //looks into tmpdir to make a temporay directory and then deleting at the end of the function 
+        //console.log(repoDir);
+        fse.ensureDir(repoDir); //will make sure the directory exists or will create a new one
+        //check the URL to see if it is a github url or a npmjs url 
+        const url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
+        const parts = url.split('/');
+        if (parts[0] === 'npmjs.com') {
+            //console.log("This is a npmjs url");
+            //finds the github url of the npmjs module
+            //console.log(`This is the npmjs package ${parts[2]}`);
+            repoURL = yield findGitHubRepoUrl(parts[2]);
+            if (repoURL == null) {
+                //console.log(`This npmjs is not stored in a github repository.`);
+                return [license_met, ramp_up_met, correctness_met];
             }
-        });
+        }
+        //console.log(repoURL);
+        //probably need to add in something to check if the url is from github just to make sure 
+        yield cloneRepository(repoURL, repoDir); //clones the repository
+        //Reads in the cloned repository
+        let readmePath = `${repoDir}/Readme.md`;
+        let readmeContent = 'none';
+        if (fs.existsSync(readmePath)) {
+            readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
+        }
+        else {
+            readmePath = `${repoDir}/readme.markdown`;
+            if (fs.existsSync(readmePath)) {
+                readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
+            }
+        }
+        //CALCULATES THE LICENSE SCORE 
+        for (const compatibleLicense of compatibleLicenses) {
+            if (readmeContent.match(compatibleLicense)) {
+                license_met = 1; //License found was compatible 
+            }
+        }
+        //CALCULATES THE RAMPUP SCORE 
+        const wordCount = countWords(readmeContent); //gets the number of words in the README
+        const maxWordCount = 2000; //NEED TO ADJUST THIS NUMBER BASED ON WHAT WE GET FROM DIFFERENT TEST RESULTS
+        ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount); //calculates the actual score
+        //CALUCLATES THE CORRECTNESS SCORE
+        correctness_met = yield calculate_correctness_metric(repoDir);
+        //deletes the temporary directory that was made
+        try {
+            fse.removeSync(repoDir);
+            //console.log('Temporary directory deleted.');
+        }
+        catch (err) {
+            console.log({ 'level': 'error', 'message': `${err}` });
+        }
+        return ([license_met, ramp_up_met, correctness_met]);
     });
 }
 exports.license_ramp_up_metric = license_ramp_up_metric;
-function lintTsFilesInZip(zip) {
-    return __awaiter(this, void 0, void 0, function () {
-        var eslint, totalIssues, resultCount, _i, _a, _b, path_2, file, content, filePath, results, error_4;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    eslint = new eslint_1.ESLint();
-                    totalIssues = 0;
-                    resultCount = 0;
-                    _i = 0, _a = Object.entries(zip.files);
-                    _c.label = 1;
-                case 1:
-                    if (!(_i < _a.length)) return [3 /*break*/, 7];
-                    _b = _a[_i], path_2 = _b[0], file = _b[1];
-                    // console.log(file);
-                    if (file.dir) {
-                        return [3 /*break*/, 6];
-                    }
-                    if (!file.name.endsWith('.ts')) return [3 /*break*/, 6];
-                    console.log('linting ts file ' + file.name);
-                    return [4 /*yield*/, file.async('string')];
-                case 2:
-                    content = _c.sent();
-                    filePath = file.name;
-                    _c.label = 3;
-                case 3:
-                    _c.trys.push([3, 5, , 6]);
-                    console.log(resultCount++);
-                    return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
-                case 4:
-                    results = _c.sent();
-                    console.log(results);
-                    // lintResults.push({ filePath, lintResults: results });
-                    totalIssues += results[0].errorCount + results[0].warningCount;
-                    return [3 /*break*/, 6];
-                case 5:
-                    error_4 = _c.sent();
-                    console.error("Error linting ".concat(filePath, ":"), error_4);
-                    return [3 /*break*/, 6];
-                case 6:
-                    _i++;
-                    return [3 /*break*/, 1];
-                case 7: 
-                // const lintTsFilesRecursively = async (zip: JSZip, folderPath: string = ''): Promise<void> => {
-                //   console.log(folderPath);
-                //   zip.forEach(async (relativePath: string, zipEntry: JSZip.JSZipObject) => {
-                //     // const fullPath = folderPath ? `${folderPath}/${relativePath}` : relativePath;
-                //     const fullPath = folderPath ? path.join(folderPath, relativePath): relativePath;
-                //     if (zipEntry.dir) {
-                //       // Recursively lint files in directories
-                //       const subZip = zip.folder(relativePath);
-                //       // console.log(subZip);
-                //       if (!subZip) {
-                //         console.error(`Error finding subfolder ${fullPath} in zip`);
-                //         return;
-                //       }
-                //       await lintTsFilesRecursively(subZip, fullPath);
-                //     } else if (relativePath.endsWith('.ts')) {
-                //       // Lint TypeScript file
-                //       console.log('linting ts file ' + fullPath)
-                //       console.log(fullPath);
-                //       const content = await zipEntry.async('string');
-                //       const filePath = fullPath;
-                //       try {
-                //         console.log(resultCount++)
-                //         const results = await eslint.lintText(content, { filePath });
-                //         console.log(results);
-                //         // lintResults.push({ filePath, lintResults: results });
-                //         totalIssues += results[0].errorCount + results[0].warningCount;
-                //       } catch (error) {
-                //         console.error(`Error linting ${filePath}:`, error);
-                //       }
-                //     }
-                //   });
-                // };
-                // await lintTsFilesRecursively(zip);
-                return [2 /*return*/, totalIssues];
+function getIssuesInZip(zip) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const eslint = new eslint_1.ESLint();
+        let totalIssues = 0;
+        for (const [path, file] of Object.entries(zip.files)) {
+            // console.log(file);
+            if (file.dir) {
+                continue;
             }
-        });
+            if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
+                console.log('linting ts file ' + file.name);
+                const content = yield file.async('string');
+                const filePath = file.name;
+                try {
+                    const results = yield eslint.lintText(content, { filePath });
+                    // console.log(results);
+                    totalIssues += results[0].errorCount + results[0].warningCount;
+                }
+                catch (error) {
+                    console.error(`Error linting ${filePath}:`, error);
+                }
+            }
+        }
+        return totalIssues;
     });
 }
-exports.lintTsFilesInZip = lintTsFilesInZip;
+exports.getIssuesInZip = getIssuesInZip;
 function zip_calculate_correctness_metric(loadedZip) {
-    return __awaiter(this, void 0, void 0, function () {
-        var lintResults, error_5;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, lintTsFilesInZip(loadedZip)];
-                case 1:
-                    lintResults = _a.sent();
-                    return [2 /*return*/, 0];
-                case 2:
-                    error_5 = _a.sent();
-                    console.error('Error running ESLint:', error_5);
-                    return [2 /*return*/, 0]; // Return 0 in case of an error
-                case 3: return [2 /*return*/];
-            }
-        });
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Initailize ESLint
+            // const eslint = new ESLint();
+            // Get a list of Typescript files in the ZIP
+            const totalIssues = yield getIssuesInZip(loadedZip);
+            const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
+            return lintScore;
+        }
+        catch (error) {
+            console.error('Error running ESLint:', error);
+            return 0; // Return 0 in case of an error
+        }
     });
 }
 exports.zip_calculate_correctness_metric = zip_calculate_correctness_metric;
 // Takes in a JSZip and returns arr source-based metrics (license, ramp-up, correctness)
 function zip_license_ramp_up_metric(loadedZip) {
-    return __awaiter(this, void 0, void 0, function () {
-        var license_met, ramp_up_met, correctness_met, readmeFiles, readmeFile, readmeContent, _i, concatLicense_1, compatibleLicense, wordCount, maxWordCount;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    license_met = 0;
-                    ramp_up_met = 0;
-                    correctness_met = 0;
-                    console.log('a');
-                    readmeFiles = loadedZip.file(/readme\.md|readme\.markdown/i);
-                    if (!readmeFiles) {
-                        console.log({ 'level': 'error', 'message': "No README file found in the zip file." });
-                        return [2 /*return*/, [0, 0, 0]];
-                    }
-                    readmeFile = readmeFiles[0];
-                    return [4 /*yield*/, readmeFile.async('text')];
-                case 1:
-                    readmeContent = (_a.sent()).toLowerCase();
-                    // console.log(readmeContent);
-                    //CALCULATES THE LICENSE SCORE
-                    for (_i = 0, concatLicense_1 = concatLicense; _i < concatLicense_1.length; _i++) {
-                        compatibleLicense = concatLicense_1[_i];
-                        if (readmeContent.match(compatibleLicense)) {
-                            license_met = 1; //License found was compatible 
-                            break; // no need to continue searching
-                        }
-                    }
-                    wordCount = countWords(readmeContent);
-                    maxWordCount = 2000;
-                    ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount);
-                    return [4 /*yield*/, zip_calculate_correctness_metric(loadedZip)];
-                case 2:
-                    //CALUCLATES THE CORRECTNESS SCORE
-                    correctness_met = _a.sent();
-                    return [2 /*return*/, ([license_met, ramp_up_met, correctness_met])];
+    return __awaiter(this, void 0, void 0, function* () {
+        let license_met = 0;
+        let ramp_up_met = 0;
+        let correctness_met = 0;
+        console.log('a');
+        const readmeFiles = loadedZip.file(/readme\.md|readme\.markdown/i);
+        if (!readmeFiles) {
+            console.log({ 'level': 'error', 'message': `No README file found in the zip file.` });
+            return [0, 0, 0];
+        }
+        var readmeFile = readmeFiles[0]; // weird to have multiple readmes but need to support for regex search
+        // Read the contents of the readme file
+        const readmeContent = (yield readmeFile.async('text')).toLowerCase();
+        // console.log(readmeContent);
+        //CALCULATES THE LICENSE SCORE
+        for (const compatibleLicense of concatLicense) {
+            if (readmeContent.match(compatibleLicense)) {
+                license_met = 1; //License found was compatible 
+                break; // no need to continue searching
             }
-        });
+        }
+        //CALCULATES THE RAMPUP SCORE 
+        const wordCount = countWords(readmeContent); //gets the number of words in the README
+        const maxWordCount = 2000; //NEED TO ADJUST THIS NUMBER BASED ON WHAT WE GET FROM DIFFERENT TEST RESULTS
+        ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount);
+        //CALUCLATES THE CORRECTNESS SCORE
+        correctness_met = yield zip_calculate_correctness_metric(loadedZip);
+        console.log([license_met, ramp_up_met, correctness_met]);
+        return ([license_met, ramp_up_met, correctness_met]);
     });
 }
 exports.zip_license_ramp_up_metric = zip_license_ramp_up_metric;

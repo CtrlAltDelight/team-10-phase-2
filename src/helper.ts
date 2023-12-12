@@ -1,7 +1,7 @@
 import JSZip = require("jszip");
 import { findGitHubRepoUrl } from "./license_ramp_up_metric";
 
-// takes in NPM or git url, returns [url, owner, repo]
+// takes in NPM or git url, returns [gitUrl, owner, repo]
 export async function gitifyURL(repoURL: string): Promise<string[] | null>  {
     let url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
     let sections = url.split('/');
@@ -19,7 +19,7 @@ export async function gitifyURL(repoURL: string): Promise<string[] | null>  {
     sections[2] = sections[2].replace(/\.git$/i, '');
     }
 
-    // Check if the URL is a valid GitHub repository URL
+    // Validate if the URL is a valid GitHub repository URL
     if (!repoURL.match(/^(https:\/\/)?(www\.)?github\.com\/[^/]+\/[^/]+$/i)) {
         console.log({'level': 'error', 'message': `Invalid GitHub repository URL: ${repoURL}`});
         return null;
@@ -29,3 +29,33 @@ export async function gitifyURL(repoURL: string): Promise<string[] | null>  {
     console.log({'level': 'info', 'message': `GitHub owner: ${sections[1]}, GitHub repo: ${sections[2]}`});
     return [url, sections[1], sections[2]]; 
   }
+
+export async function gitifyZip(zip: JSZip) {
+    // Get the GitHub URL from the package.json file
+    const packageJson = zip.file('package.json');
+    if (packageJson === null) {
+        console.log({'level': 'error', 'message': 'Invalid zip file: package.json not found.'});
+        return null;
+    }
+    const packageJsonText = await packageJson.async('string');
+    const packageJsonObj = JSON.parse(packageJsonText);
+    if (packageJsonObj.repository === undefined) {
+        console.log({'level': 'error', 'message': 'Invalid zip file: repository not found in package.json.'});
+        return null;
+    }
+    
+    let repoURL = packageJsonObj.repository.url;
+    if (repoURL === undefined) {
+        console.log({'level': 'warning', 'message': 'no repository.url in package.json, trying repository field'});
+        repoURL = `https://github.com/${packageJsonObj.repository}`;
+    }
+    if (!repoURL.match(/^(https:\/\/)?(www\.)?github\.com\/[^/]+\/[^/]+$/i)) {
+        console.log({'level': 'error', 'message': `Invalid GitHub repository URL: ${repoURL}`});
+        return null;
+    }
+    console.log({'level': 'info', 'message': `GitHub URL: ${repoURL}`});
+    const url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
+    const sections = url.split('/');
+    console.log({'level': 'info', 'message': `GitHub owner: ${sections[1]}, GitHub repo: ${sections[2]}`});
+    return [url, sections[1], sections[2]];
+}

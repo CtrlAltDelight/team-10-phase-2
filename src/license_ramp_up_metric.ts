@@ -9,7 +9,6 @@ import * as tmp from 'tmp';
 import { Linter, ESLint} from 'eslint'; 
 import { join, extname } from 'path'; 
 import JSZip = require('jszip');
-import * as path from 'path';
 
 const compatibleLicenses = [
   'mit license', 
@@ -90,35 +89,38 @@ async function cloneRepository(repoUrl: string, localPath: string): Promise<void
     //console.log('Repository cloned successfully.');
 
   } catch (error) {
-    logger.log({'level': 'error', 'message': `${error}`});
+    console.log({'level': 'error', 'message': `${error}`});
   }
 }
 
 
 export async function findGitHubRepoUrl(packageName: string): Promise<string> {
+  console.log(`Finding GitHub repository URL for ${packageName}`)
   try {
     // Fetch package metadata from the npm registry
+    console.log(process.version)
     const response = await axios.get(`https://registry.npmjs.org/${packageName}`);
-
+    console.log("got here")
+    console.log(response);
+    console.log(response.status);
     if (response.status !== 200) {
-      logger.log({'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}`});
+      console.log({'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}`});
       return 'none';
     }
-
     // Parse the response JSON
     const packageMetadata = response.data;
-
+    console.log(packageMetadata);
     //console.log(packageMetadata.repository);
     //console.log(packageMetadata.repository.url);
     // Check if the "repository" field exists in the package.json
     if (packageMetadata.repository && packageMetadata.repository.url) {
       return 'https://' + packageMetadata.repository.url.match(/github\.com\/[^/]+\/[^/]+(?=\.git|$)/);
     } else {
-      logger.log({'level': 'error', 'message': `No repository URL found for ${packageName}`});
+      console.log({'level': 'error', 'message': `No repository URL found for ${packageName}`});
       return 'none';
     }
   } catch (error) {
-    logger.log({'level': 'error', 'message': `${error}`});
+    console.log({'level': 'error', 'message': `${error}`});
     return 'none';
   }
 } 
@@ -251,7 +253,7 @@ export async function license_ramp_up_metric(repoURL: string): Promise<number[]>
       fse.removeSync(repoDir); 
       //console.log('Temporary directory deleted.');
     } catch (err) {
-      logger.log({'level': 'error', 'message': `${err}`});
+      console.log({'level': 'error', 'message': `${err}`});
     }
 
 
@@ -261,7 +263,6 @@ export async function license_ramp_up_metric(repoURL: string): Promise<number[]>
 export async function getIssuesInZip(zip: JSZip): Promise<number>{
   const eslint = new ESLint();
   let totalIssues = 0;
-  
   for (const [path, file] of Object.entries(zip.files)) {
     // console.log(file);
     if (file.dir) {
@@ -337,5 +338,6 @@ export async function zip_license_ramp_up_metric(loadedZip: JSZip): Promise<numb
 
   //CALUCLATES THE CORRECTNESS SCORE
   correctness_met =  await zip_calculate_correctness_metric(loadedZip);
+  console.log([license_met, ramp_up_met, correctness_met])
   return([license_met, ramp_up_met, correctness_met]); 
 }

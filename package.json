@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "16.x"
+  },
   "dependencies": {
     "@octokit/graphql": "^7.0.2",
     "@octokit/rest": "^20.0.2",
@@ -46,6 +49,7 @@
     "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^8.55.0",
     "jszip": "^3.10.1",
+    "path": "^0.12.7",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   }
