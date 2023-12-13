@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import logger from './run';
 import { graphql, GraphQlQueryResponseData } from '@octokit/graphql';
 import { findGitHubRepoUrl } from './license_ramp_up_metric';
 import fetch, { Response } from 'node-fetch';
@@ -188,7 +187,7 @@ async function fetchPackageJson(owner: string, repo: string): Promise<any> {
           return JSON.parse(content);
         }
     } catch (error) {
-        logger.log({'level': 'error', 'message': `Error fetching package.json: ${error}`});
+        console.log({'level': 'error', 'message': `Error fetching package.json: ${error}`});
         return null;
     }
 }
@@ -222,7 +221,7 @@ async function fetchPullRequests(owner: string, repo: string, octokit: Octokit):
         });
         return prs;
     } catch (error) {
-        logger.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
+        console.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
         return [];
     }
 }
@@ -237,12 +236,12 @@ async function calcCodeReviewMetric(owner: string, repo: string): Promise<number
     try { // Getting all pull requests
         pullRequests = await fetchPullRequests(owner, repo, octokit);
     } catch (error) {
-        logger.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
+        console.log({'level': 'error', 'message': `Error fetching pull requests: ${error}`});
         return 0;
     }
 
     if (!pullRequests || pullRequests.length === 0) {
-        logger.log({'level': 'info', 'message': 'No pull requests found or error in fetching.'});
+        console.log({'level': 'info', 'message': 'No pull requests found or error in fetching.'});
         return 0;
     }
 
@@ -275,12 +274,12 @@ async function calcCodeReviewMetric(owner: string, repo: string): Promise<number
                 reviewedCodeChanges += info.data.additions + info.data.deletions;
             }
         } catch (error) {
-            logger.log({'level': 'error', 'message': `Error processing PR #${pr.number}: ${error}`});
+            console.log({'level': 'error', 'message': `Error processing PR #${pr.number}: ${error}`});
         }
     }
 
     if (totalCodeChanges === 0) {
-        logger.log({'level': 'info', 'message': 'Total code changes are zero.'});
+        console.log({'level': 'info', 'message': 'Total code changes are zero.'});
         return 0; // Avoid division by zero
     }
 

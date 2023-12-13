@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import logger from './run';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import git from 'isomorphic-git'; 
@@ -76,22 +75,22 @@ const licensesRegex = [
 
 const concatLicense = compatibleLicenses.concat(licensesRegex);
 
-async function cloneRepository(repoUrl: string, localPath: string): Promise<void> { 
-  try {
-    // Clone the repository
-    await git.clone({
-      fs,
-      http,
-      dir: localPath,
-      url: repoUrl,
-    });
+// async function cloneRepository(repoUrl: string, localPath: string): Promise<void> { 
+//   try {
+//     // Clone the repository
+//     await git.clone({
+//       fs,
+//       http,
+//       dir: localPath,
+//       url: repoUrl,
+//     });
 
-    //console.log('Repository cloned successfully.');
+//     //console.log('Repository cloned successfully.');
 
-  } catch (error) {
-    console.log({'level': 'error', 'message': `${error}`});
-  }
-}
+//   } catch (error) {
+//     console.log({'level': 'error', 'message': `${error}`});
+//   }
+// }
 
 
 export async function findGitHubRepoUrl(packageName: string): Promise<string> {
@@ -140,125 +139,125 @@ export function calculate_ramp_up_metric(wordCount: number, maxWordCount: number
   return Math.min(wordCount / maxWordCount, maxScore); 
 }
 
-export function findAllFiles(directory: string): string[] {
-  const allFiles: string[] = []; 
-  const codeExtensions = ['.ts']; //NEED TP MAKE THIS WORK FOR ALL DIFFERENT TYPES OF FILES BUT RIGHT NOW IT ONLY GOES THROUGH .TS FILES
+// export function findAllFiles(directory: string): string[] {
+//   const allFiles: string[] = []; 
+//   const codeExtensions = ['.ts']; //NEED TP MAKE THIS WORK FOR ALL DIFFERENT TYPES OF FILES BUT RIGHT NOW IT ONLY GOES THROUGH .TS FILES
   
-  function traverseDirectory(currentDir: string) {
-    const files = fs.readdirSync(currentDir);
-    for (const file of files) {
-      const filePath = join(currentDir, file);
-      const stats = fs.statSync(filePath);
-      if (stats.isDirectory()) {
-        // Recursively traverse subdirectories
-        traverseDirectory(filePath);
-      } else if (codeExtensions.includes(extname(filePath))) {
-        allFiles.push(filePath);
-      }
-    }
-  }
+//   function traverseDirectory(currentDir: string) {
+//     const files = fs.readdirSync(currentDir);
+//     for (const file of files) {
+//       const filePath = join(currentDir, file);
+//       const stats = fs.statSync(filePath);
+//       if (stats.isDirectory()) {
+//         // Recursively traverse subdirectories
+//         traverseDirectory(filePath);
+//       } else if (codeExtensions.includes(extname(filePath))) {
+//         allFiles.push(filePath);
+//       }
+//     }
+//   }
 
-  traverseDirectory(directory);
-  return allFiles; 
-}
+//   traverseDirectory(directory);
+//   return allFiles; 
+// }
 
-export async function calculate_correctness_metric(filepath: string): Promise<number> {
-  try {
-    // Initailize ESLint
-    const eslint = new ESLint(); 
+// export async function calculate_correctness_metric(filepath: string): Promise<number> {
+//   try {
+//     // Initailize ESLint
+//     const eslint = new ESLint(); 
 
-    //Get a list of Typescript files with the cloned directory
-    const allFiles = findAllFiles(filepath); 
+//     //Get a list of Typescript files with the cloned directory
+//     const allFiles = findAllFiles(filepath); 
 
-    //Lint in Typescript files
-    const results = eslint.lintFiles(allFiles); 
+//     //Lint in Typescript files
+//     const results = eslint.lintFiles(allFiles); 
 
-    // Calculate the total number of issues (errors + warnings)
-    let totalIssues = 0; 
-    for (const result of await results) 
-    {
-      totalIssues += result.errorCount + result.warningCount; 
-    }
+//     // Calculate the total number of issues (errors + warnings)
+//     let totalIssues = 0; 
+//     for (const result of await results) 
+//     {
+//       totalIssues += result.errorCount + result.warningCount; 
+//     }
 
-    // Calculate the lint score as a value between 0 and 1
-    const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
+//     // Calculate the lint score as a value between 0 and 1
+//     const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
 
-    return lintScore;
-  } catch (error) {
-    //console.error('Error running ESLint:', error);
-    return 0; // Return 0 in case of an error
-  }
-}
+//     return lintScore;
+//   } catch (error) {
+//     //console.error('Error running ESLint:', error);
+//     return 0; // Return 0 in case of an error
+//   }
+// }
 
-export async function license_ramp_up_metric(repoURL: string): Promise<number[]> {
-    const tempDir = tmp.dirSync(); //makes a temporary directory
-    const repoDir = tempDir.name; 
-    let license_met = 0;
-    let ramp_up_met = 0;  
-    let correctness_met = 0; 
-    //looks into tmpdir to make a temporay directory and then deleting at the end of the function 
-    //console.log(repoDir);
-    fse.ensureDir(repoDir); //will make sure the directory exists or will create a new one
+// export async function license_ramp_up_metric(repoURL: string): Promise<number[]> {
+//     const tempDir = tmp.dirSync(); //makes a temporary directory
+//     const repoDir = tempDir.name; 
+//     let license_met = 0;
+//     let ramp_up_met = 0;  
+//     let correctness_met = 0; 
+//     //looks into tmpdir to make a temporay directory and then deleting at the end of the function 
+//     //console.log(repoDir);
+//     fse.ensureDir(repoDir); //will make sure the directory exists or will create a new one
     
-    //check the URL to see if it is a github url or a npmjs url 
-    const url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
-    const parts = url.split('/'); 
-    if(parts[0] === 'npmjs.com') {
-      //console.log("This is a npmjs url");
-      //finds the github url of the npmjs module
-      //console.log(`This is the npmjs package ${parts[2]}`);
-      repoURL = await findGitHubRepoUrl(parts[2]);
-      if(repoURL == null) {
-        //console.log(`This npmjs is not stored in a github repository.`);
-        return [license_met, ramp_up_met, correctness_met]; 
-      }
-    }
-    //console.log(repoURL);
+//     //check the URL to see if it is a github url or a npmjs url 
+//     const url = repoURL.replace(/^(https?:\/\/)?(www\.)?/i, '');
+//     const parts = url.split('/'); 
+//     if(parts[0] === 'npmjs.com') {
+//       //console.log("This is a npmjs url");
+//       //finds the github url of the npmjs module
+//       //console.log(`This is the npmjs package ${parts[2]}`);
+//       repoURL = await findGitHubRepoUrl(parts[2]);
+//       if(repoURL == null) {
+//         //console.log(`This npmjs is not stored in a github repository.`);
+//         return [license_met, ramp_up_met, correctness_met]; 
+//       }
+//     }
+//     //console.log(repoURL);
 
-    //probably need to add in something to check if the url is from github just to make sure 
+//     //probably need to add in something to check if the url is from github just to make sure 
     
-    await cloneRepository(repoURL, repoDir); //clones the repository
+//     await cloneRepository(repoURL, repoDir); //clones the repository
 
-    //Reads in the cloned repository
-    let readmePath = `${repoDir}/Readme.md`; 
-    let readmeContent = 'none';
-    if(fs.existsSync(readmePath)) {
-      readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
-    } else {
-      readmePath = `${repoDir}/readme.markdown`; 
-      if(fs.existsSync(readmePath)) {
-        readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
-      } 
-    }
+//     //Reads in the cloned repository
+//     let readmePath = `${repoDir}/Readme.md`; 
+//     let readmeContent = 'none';
+//     if(fs.existsSync(readmePath)) {
+//       readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
+//     } else {
+//       readmePath = `${repoDir}/readme.markdown`; 
+//       if(fs.existsSync(readmePath)) {
+//         readmeContent = fs.readFileSync(readmePath, 'utf-8').toLowerCase();
+//       } 
+//     }
 
-    //CALCULATES THE LICENSE SCORE 
-    for(const compatibleLicense of compatibleLicenses) {
-      if(readmeContent.match(compatibleLicense)) {
-        license_met = 1; //License found was compatible 
-      }
-    }
+//     //CALCULATES THE LICENSE SCORE 
+//     for(const compatibleLicense of compatibleLicenses) {
+//       if(readmeContent.match(compatibleLicense)) {
+//         license_met = 1; //License found was compatible 
+//       }
+//     }
 
-    //CALCULATES THE RAMPUP SCORE 
-    const wordCount = countWords(readmeContent); //gets the number of words in the README
-    const maxWordCount = 2000; //NEED TO ADJUST THIS NUMBER BASED ON WHAT WE GET FROM DIFFERENT TEST RESULTS
-    ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount); //calculates the actual score
-
-
-    //CALUCLATES THE CORRECTNESS SCORE
-    correctness_met =  await calculate_correctness_metric(repoDir); 
+//     //CALCULATES THE RAMPUP SCORE 
+//     const wordCount = countWords(readmeContent); //gets the number of words in the README
+//     const maxWordCount = 2000; //NEED TO ADJUST THIS NUMBER BASED ON WHAT WE GET FROM DIFFERENT TEST RESULTS
+//     ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount); //calculates the actual score
 
 
-    //deletes the temporary directory that was made
-    try {
-      fse.removeSync(repoDir); 
-      //console.log('Temporary directory deleted.');
-    } catch (err) {
-      console.log({'level': 'error', 'message': `${err}`});
-    }
+//     //CALUCLATES THE CORRECTNESS SCORE
+//     correctness_met =  await calculate_correctness_metric(repoDir); 
 
 
-    return([license_met, ramp_up_met, correctness_met]); 
-}
+//     //deletes the temporary directory that was made
+//     try {
+//       fse.removeSync(repoDir); 
+//       //console.log('Temporary directory deleted.');
+//     } catch (err) {
+//       console.log({'level': 'error', 'message': `${err}`});
+//     }
+
+
+//     return([license_met, ramp_up_met, correctness_met]); 
+// }
 
 export async function getIssuesInZip(zip: JSZip): Promise<number>{
   const eslint = new ESLint();
