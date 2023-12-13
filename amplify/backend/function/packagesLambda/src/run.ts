@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import { zip_license_ramp_up_metric } from './license_ramp_up_metric';
 import { bus_factor_maintainer_metric } from './bus_factor_maintainer_metric';
 import * as dotenv from 'dotenv';
-import * as winston from 'winston';
+// import * as winston from 'winston';
 import { exit } from 'process';
 import JSZip = require('jszip');
 import { Console } from 'console';
@@ -113,32 +113,30 @@ if (process.env.LOG_LEVEL !== undefined && process.env.LOG_LEVEL !== '') {
   }
 }
 
-// Configure logging to LOG_FILE
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.simple(),
-  transports: [
-    // default log file
-    new winston.transports.File({ filename: '/tmp/run.log', level: logLevel }),
-  ],
-});
+// // Configure logging to LOG_FILE
+// const logger = winston.createLogger({
+//   level: 'info',
+//   format: winston.format.simple(),
+//   transports: [
+//     // default log file
+//     new winston.transports.File({ filename: '/tmp/run.log', level: logLevel }),
+//   ],
+// });
 
-fs.access(logFile, fs.constants.W_OK, (err) => {
-  if (err) {
-    // If unable to access, log to a default file
-    fs.writeFileSync('/tmp/run.log', '', { flag: 'w' });
-  } else {
-    logger.remove(new winston.transports.File({ filename: '/tmp/run.log', level: logLevel }));
-    // Clear LOG_FILE, open with write permissions if it doesn't exist
-    logger.add(new winston.transports.File({ filename: logFile, level: logLevel }));
-    fs.writeFileSync(logFile, '', { flag: 'w' });
-  }
-});
+// fs.access(logFile, fs.constants.W_OK, (err) => {
+//   if (err) {
+//     // If unable to access, log to a default file
+//     fs.writeFileSync('/tmp/run.log', '', { flag: 'w' });
+//   } else {
+//     logger.remove(new winston.transports.File({ filename: '/tmp/run.log', level: logLevel }));
+//     // Clear LOG_FILE, open with write permissions if it doesn't exist
+//     logger.add(new winston.transports.File({ filename: logFile, level: logLevel }));
+//     fs.writeFileSync(logFile, '', { flag: 'w' });
+//   }
+// });
 
-export default logger;
-// console.log(args)
-// gitifyURL(args[0]);
-// exit(0);
+// export default logger;
+
 if(args[0] == 'test')
 {
     runTests('./jest.log.txt');
@@ -172,9 +170,9 @@ else if(args[0] !== undefined)
 {
     fs.access(args[0], fs.constants.F_OK, (err) => {
         if (err) {
-            logger.log({'level': 'error', 'message': `File '${args[0]}' does not exist.`});
+            console.log({'level': 'error', 'message': `File '${args[0]}' does not exist.`});
         } else {
-            logger.log({'level': 'info', 'message': `File '${args[0]}' exists.`});
+            console.log({'level': 'info', 'message': `File '${args[0]}' exists.`});
             processUrls(args[0]);
         }
     });

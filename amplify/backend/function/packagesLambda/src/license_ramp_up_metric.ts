@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
-import * as fse from 'fs-extra';
-import git from 'isomorphic-git'; 
-import http from 'isomorphic-git/http/node';
+// import * as fse from 'fs-extra';
+// import git from 'isomorphic-git'; 
+// import http from 'isomorphic-git/http/node';
 import axios from 'axios';
-import * as tmp from 'tmp';
+// import * as tmp from 'tmp';
 import { Linter, ESLint} from 'eslint'; 
 import { join, extname } from 'path'; 
 import JSZip = require('jszip');
