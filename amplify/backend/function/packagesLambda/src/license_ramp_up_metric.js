@@ -1,51 +1,22 @@
 #!/usr/bin/env node
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zip_license_ramp_up_metric = exports.zip_calculate_correctness_metric = exports.getIssuesInZip = exports.calculate_ramp_up_metric = exports.countWords = exports.findGitHubRepoUrl = void 0;
-var axios_1 = require("axios");
-var eslint_1 = require("eslint");
-var compatibleLicenses = [
+// import * as fse from 'fs-extra';
+// import git from 'isomorphic-git'; 
+// import http from 'isomorphic-git/http/node';
+const axios_1 = __importDefault(require("axios"));
+// import * as tmp from 'tmp';
+const eslint_1 = require("eslint");
+const compatibleLicenses = [
     'mit license',
     'bsd 2-clause "simplified" license',
     /(mit.*license|license.*mit)/i,
 ]; //inherited
-var licensesRegex = [
+const licensesRegex = [
     /gpl/i,
     /gnu lesser general public license/i,
     /gnu general public license/i,
@@ -102,7 +73,7 @@ var licensesRegex = [
     /zlib/i,
     /zope/i,
 ]; //team 10 phase 1
-var concatLicense = compatibleLicenses.concat(licensesRegex);
+const concatLicense = compatibleLicenses.concat(licensesRegex);
 // async function cloneRepository(repoUrl: string, localPath: string): Promise<void> { 
 //   try {
 //     // Clone the repository
@@ -117,56 +88,49 @@ var concatLicense = compatibleLicenses.concat(licensesRegex);
 //     console.log({'level': 'error', 'message': `${error}`});
 //   }
 // }
-function findGitHubRepoUrl(packageName) {
-    return __awaiter(this, void 0, void 0, function () {
-        var response, packageMetadata, error_1;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, axios_1.default.get("https://registry.npmjs.org/".concat(packageName))];
-                case 1:
-                    response = _a.sent();
-                    // console.log("got here")
-                    // console.log(response);
-                    // console.log(response.status);
-                    if (response.status !== 200) {
-                        console.log({ 'level': 'error', 'message': "Failed to fetch package metadata for ".concat(packageName) });
-                        return [2 /*return*/, 'none'];
-                    }
-                    packageMetadata = response.data;
-                    // console.log(packageMetadata);
-                    //console.log(packageMetadata.repository);
-                    //console.log(packageMetadata.repository.url);
-                    // Check if the "repository" field exists in the package.json
-                    if (packageMetadata.repository && packageMetadata.repository.url) {
-                        return [2 /*return*/, 'https://' + packageMetadata.repository.url.match(/github\.com\/[^/]+\/[^/]+(?=\.git|$)/)];
-                    }
-                    else {
-                        console.log({ 'level': 'error', 'message': "No repository URL found for ".concat(packageName) });
-                        return [2 /*return*/, 'none'];
-                    }
-                    return [3 /*break*/, 3];
-                case 2:
-                    error_1 = _a.sent();
-                    console.log({ 'level': 'error', 'message': "".concat(error_1) });
-                    return [2 /*return*/, 'none'];
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
+async function findGitHubRepoUrl(packageName) {
+    // console.log(`Finding GitHub repository URL for ${packageName}`)
+    try {
+        // Fetch package metadata from the npm registry
+        // console.log(process.version)
+        const response = await axios_1.default.get(`https://registry.npmjs.org/${packageName}`);
+        // console.log("got here")
+        // console.log(response);
+        // console.log(response.status);
+        if (response.status !== 200) {
+            console.log({ 'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}` });
+            return 'none';
+        }
+        // Parse the response JSON
+        const packageMetadata = response.data;
+        // console.log(packageMetadata);
+        //console.log(packageMetadata.repository);
+        //console.log(packageMetadata.repository.url);
+        // Check if the "repository" field exists in the package.json
+        if (packageMetadata.repository && packageMetadata.repository.url) {
+            return 'https://' + packageMetadata.repository.url.match(/github\.com\/[^/]+\/[^/]+(?=\.git|$)/);
+        }
+        else {
+            console.log({ 'level': 'error', 'message': `No repository URL found for ${packageName}` });
+            return 'none';
+        }
+    }
+    catch (error) {
+        console.log({ 'level': 'error', 'message': `${error}` });
+        return 'none';
+    }
 }
 exports.findGitHubRepoUrl = findGitHubRepoUrl;
 // Function to count words in a string
 function countWords(text) {
-    var words = text.split(/\s+/);
-    var nonEmptyWords = words.filter(function (word) { return word !== ''; });
+    const words = text.split(/\s+/);
+    const nonEmptyWords = words.filter(word => word !== '');
     return nonEmptyWords.length;
 }
 exports.countWords = countWords;
 // Function to calculate the score based on word count
 function calculate_ramp_up_metric(wordCount, maxWordCount) {
-    var maxScore = 1.0; // Maximum score
+    const maxScore = 1.0; // Maximum score
     // Calculate the score based on the word count relative to the max word count
     return Math.min(wordCount / maxWordCount, maxScore);
 }
@@ -269,111 +233,75 @@ exports.calculate_ramp_up_metric = calculate_ramp_up_metric;
 //     }
 //     return([license_met, ramp_up_met, correctness_met]); 
 // }
-function getIssuesInZip(zip) {
-    return __awaiter(this, void 0, void 0, function () {
-        var eslint, totalIssues, _i, _a, _b, path, file, content, filePath, results, error_2;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
-                case 0:
-                    eslint = new eslint_1.ESLint();
-                    totalIssues = 0;
-                    _i = 0, _a = Object.entries(zip.files);
-                    _c.label = 1;
-                case 1:
-                    if (!(_i < _a.length)) return [3 /*break*/, 7];
-                    _b = _a[_i], path = _b[0], file = _b[1];
-                    // console.log(file);
-                    if (file.dir) {
-                        return [3 /*break*/, 6];
-                    }
-                    if (!(file.name.endsWith('.ts') || file.name.endsWith('.tsx'))) return [3 /*break*/, 6];
-                    return [4 /*yield*/, file.async('string')];
-                case 2:
-                    content = _c.sent();
-                    filePath = file.name;
-                    _c.label = 3;
-                case 3:
-                    _c.trys.push([3, 5, , 6]);
-                    return [4 /*yield*/, eslint.lintText(content, { filePath: filePath })];
-                case 4:
-                    results = _c.sent();
-                    // console.log(results);
-                    totalIssues += results[0].errorCount + results[0].warningCount;
-                    return [3 /*break*/, 6];
-                case 5:
-                    error_2 = _c.sent();
-                    console.error("Error linting ".concat(filePath, ":"), error_2);
-                    return [3 /*break*/, 6];
-                case 6:
-                    _i++;
-                    return [3 /*break*/, 1];
-                case 7: return [2 /*return*/, totalIssues];
+async function getIssuesInZip(zip) {
+    const eslint = new eslint_1.ESLint();
+    let totalIssues = 0;
+    for (const [path, file] of Object.entries(zip.files)) {
+        // console.log(file);
+        if (file.dir) {
+            continue;
+        }
+        if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
+            // console.log('linting ts file ' + file.name)
+            const content = await file.async('string');
+            const filePath = file.name;
+            try {
+                const results = await eslint.lintText(content, { filePath });
+                // console.log(results);
+                totalIssues += results[0].errorCount + results[0].warningCount;
             }
-        });
-    });
+            catch (error) {
+                console.error(`Error linting ${filePath}:`, error);
+            }
+        }
+    }
+    return totalIssues;
 }
 exports.getIssuesInZip = getIssuesInZip;
-function zip_calculate_correctness_metric(loadedZip) {
-    return __awaiter(this, void 0, void 0, function () {
-        var totalIssues, lintScore, error_3;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, getIssuesInZip(loadedZip)];
-                case 1:
-                    totalIssues = _a.sent();
-                    lintScore = 1 - Math.min(1, totalIssues / 1000.0);
-                    return [2 /*return*/, lintScore];
-                case 2:
-                    error_3 = _a.sent();
-                    console.error('Error running ESLint:', error_3);
-                    return [2 /*return*/, 0]; // Return 0 in case of an error
-                case 3: return [2 /*return*/];
-            }
-        });
-    });
+async function zip_calculate_correctness_metric(loadedZip) {
+    try {
+        // Initailize ESLint
+        // const eslint = new ESLint();
+        // Get a list of Typescript files in the ZIP
+        const totalIssues = await getIssuesInZip(loadedZip);
+        const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
+        return lintScore;
+    }
+    catch (error) {
+        console.error('Error running ESLint:', error);
+        return 0; // Return 0 in case of an error
+    }
 }
 exports.zip_calculate_correctness_metric = zip_calculate_correctness_metric;
 // Takes in a JSZip and returns arr source-based metrics (license, ramp-up, correctness)
-function zip_license_ramp_up_metric(loadedZip) {
-    return __awaiter(this, void 0, void 0, function () {
-        var license_met, ramp_up_met, correctness_met, readmeFiles, readmeFile, readmeContent, _i, concatLicense_1, compatibleLicense, wordCount, maxWordCount;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    license_met = 0;
-                    ramp_up_met = 0;
-                    correctness_met = 0;
-                    readmeFiles = loadedZip.file(/readme\.md|readme\.markdown/i);
-                    if (!readmeFiles) {
-                        console.log({ 'level': 'error', 'message': "No README file found in the zip file." });
-                        return [2 /*return*/, [0, 0, 0]];
-                    }
-                    readmeFile = readmeFiles[0];
-                    return [4 /*yield*/, readmeFile.async('text')];
-                case 1:
-                    readmeContent = (_a.sent()).toLowerCase();
-                    // console.log(readmeContent);
-                    //CALCULATES THE LICENSE SCORE
-                    for (_i = 0, concatLicense_1 = concatLicense; _i < concatLicense_1.length; _i++) {
-                        compatibleLicense = concatLicense_1[_i];
-                        if (readmeContent.match(compatibleLicense)) {
-                            license_met = 1; //License found was compatible 
-                            break; // no need to continue searching
-                        }
-                    }
-                    wordCount = countWords(readmeContent);
-                    maxWordCount = 2000;
-                    ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount);
-                    return [4 /*yield*/, zip_calculate_correctness_metric(loadedZip)];
-                case 2:
-                    //CALUCLATES THE CORRECTNESS SCORE
-                    correctness_met = _a.sent();
-                    console.log([license_met, ramp_up_met, correctness_met]);
-                    return [2 /*return*/, ([license_met, ramp_up_met, correctness_met])];
-            }
-        });
-    });
+async function zip_license_ramp_up_metric(loadedZip) {
+    let license_met = 0;
+    let ramp_up_met = 0;
+    let correctness_met = 0;
+    // console.log('a');
+    const readmeFiles = loadedZip.file(/readme\.md|readme\.markdown/i);
+    if (!readmeFiles) {
+        console.log({ 'level': 'error', 'message': `No README file found in the zip file.` });
+        return [0, 0, 0];
+    }
+    var readmeFile = readmeFiles[0]; // weird to have multiple readmes but need to support for regex search
+    // Read the contents of the readme file
+    const readmeContent = (await readmeFile.async('text')).toLowerCase();
+    // console.log(readmeContent);
+    //CALCULATES THE LICENSE SCORE
+    for (const compatibleLicense of concatLicense) {
+        if (readmeContent.match(compatibleLicense)) {
+            license_met = 1; //License found was compatible 
+            break; // no need to continue searching
+        }
+    }
+    //CALCULATES THE RAMPUP SCORE 
+    const wordCount = countWords(readmeContent); //gets the number of words in the README
+    const maxWordCount = 2000; //NEED TO ADJUST THIS NUMBER BASED ON WHAT WE GET FROM DIFFERENT TEST RESULTS
+    ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount);
+    //CALUCLATES THE CORRECTNESS SCORE
+    correctness_met = await zip_calculate_correctness_metric(loadedZip);
+    console.log([license_met, ramp_up_met, correctness_met]);
+    return ([license_met, ramp_up_met, correctness_met]);
 }
 exports.zip_license_ramp_up_metric = zip_license_ramp_up_metric;
