@@ -17,6 +17,6 @@ elif [ "$1" == "test" ]; then
     npx tsc src/run.ts
     node src/run.js "$@"
 else
-    npx tsc src/run.ts
-    node src/run.js "$@"
+    npx tsc amplify/backend/function/packagesLambda/src/run.ts
+    node amplify/backend/function/packagesLambda/src/run.js "$@"
 fi
