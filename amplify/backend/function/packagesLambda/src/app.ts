@@ -607,7 +607,10 @@ app.post('/package', async (req: any, res: any) => {
     const URLStore = URL || (Content && parsedPackageJSON.repository.url);
 
     if (URL) {
-        console.log(bus_factor_maintainer_metric(URL))
+        bus_factor_maintainer_metric(URL).then(result => {
+            console.log("url met")
+            console.log(result);
+        });
     }
 
     const params = {
