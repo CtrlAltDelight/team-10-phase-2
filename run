@@ -18,7 +18,7 @@ elif [ "$1" == "test" ]; then
     node src/run.js "$@"
 else
     echo "nuts"
-    cd amplify/backend/function/packagesLambda/src
+    cd amplify/backend/function/packagesLambda/src/src
     npx tsc 
     node run.js "$@"
 fi
