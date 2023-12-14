@@ -8,12 +8,73 @@ import axios from 'axios';
 import * as tmp from 'tmp';
 import { Linter, ESLint} from 'eslint'; 
 import { join, extname } from 'path'; 
+import JSZip = require('jszip');
 
 const compatibleLicenses = [
-    'mit license', 
-    'bsd 2-clause "simplified" license', 
-    /(mit.*license|license.*mit)/i,
-];
+  'mit license', 
+  'bsd 2-clause "simplified" license', 
+  /(mit.*license|license.*mit)/i,
+]; //inherited
+
+const licensesRegex = [
+  /gpl/i,
+  /gnu lesser general public license/i,
+  /gnu general public license/i,
+  /gnu affero public license/i,
+  /gnu all-permissive license/i,
+  /mit/i,
+  /apache2/i, // NOTE: apache1 is not compatible with LGPLv2.1
+  /apache 2/i,
+  /apache-2/i,
+  /apache license, version 2/i,
+  /artistic/i,
+  /bsd/i,
+  /ldap/i,
+  /cecill/i,
+  /cryptix/i,
+  /ecos/i,
+  /ecl/i,
+  /educational community license/i,
+  /eiffel/i,
+  /eu datagrid/i,
+  /eudatagrid/i,
+  /expat/i,
+  /freetype/i,
+  /hpnd/i,
+  /historical permission notice and disclaimer/i,
+  /imatrix/i,
+  /imlib/i,
+  /ijg/i,
+  /independent jpeg/i,
+  /informal license/i,
+  /intel open source/i,
+  /isc/,
+  /mpl/i,
+  /mozilla/i,
+  /ncsa/i,
+  /netscape/i,
+  /perl/i,
+  /python/i,
+  /public domain/i,
+  /license of ruby/i,
+  /sgi free software/i,
+  /ml of new jersey/i,
+  /unicode/i,
+  /upl/i,
+  /universal permissive license/i,
+  /unlicense/i,
+  /vim/i,
+  /w3c/i,
+  /webm/i,
+  /wtfpl/i,
+  /wx/i,
+  /x11/i,
+  /xfree86/i,
+  /zlib/i,
+  /zope/i,
+]; //team 10 phase 1
+
+const concatLicense = compatibleLicenses.concat(licensesRegex);
 
 async function cloneRepository(repoUrl: string, localPath: string): Promise<void> { 
   try {
@@ -28,35 +89,38 @@ async function cloneRepository(repoUrl: string, localPath: string): Promise<void
     //console.log('Repository cloned successfully.');
 
   } catch (error) {
-    logger.log({'level': 'error', 'message': `${error}`});
+    console.log({'level': 'error', 'message': `${error}`});
   }
 }
 
 
 export async function findGitHubRepoUrl(packageName: string): Promise<string> {
+  // console.log(`Finding GitHub repository URL for ${packageName}`)
   try {
     // Fetch package metadata from the npm registry
+    // console.log(process.version)
     const response = await axios.get(`https://registry.npmjs.org/${packageName}`);
-
+    // console.log("got here")
+    // console.log(response);
+    // console.log(response.status);
     if (response.status !== 200) {
-      logger.log({'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}`});
+      console.log({'level': 'error', 'message': `Failed to fetch package metadata for ${packageName}`});
       return 'none';
     }
-
     // Parse the response JSON
     const packageMetadata = response.data;
-
+    // console.log(packageMetadata);
     //console.log(packageMetadata.repository);
     //console.log(packageMetadata.repository.url);
     // Check if the "repository" field exists in the package.json
     if (packageMetadata.repository && packageMetadata.repository.url) {
       return 'https://' + packageMetadata.repository.url.match(/github\.com\/[^/]+\/[^/]+(?=\.git|$)/);
     } else {
-      logger.log({'level': 'error', 'message': `No repository URL found for ${packageName}`});
+      console.log({'level': 'error', 'message': `No repository URL found for ${packageName}`});
       return 'none';
     }
   } catch (error) {
-    logger.log({'level': 'error', 'message': `${error}`});
+    console.log({'level': 'error', 'message': `${error}`});
     return 'none';
   }
 } 
@@ -189,9 +253,91 @@ export async function license_ramp_up_metric(repoURL: string): Promise<number[]>
       fse.removeSync(repoDir); 
       //console.log('Temporary directory deleted.');
     } catch (err) {
-      logger.log({'level': 'error', 'message': `${err}`});
+      console.log({'level': 'error', 'message': `${err}`});
     }
 
 
     return([license_met, ramp_up_met, correctness_met]); 
+}
+
+export async function getIssuesInZip(zip: JSZip): Promise<number>{
+  const eslint = new ESLint();
+  let totalIssues = 0;
+  for (const [path, file] of Object.entries(zip.files)) {
+    // console.log(file);
+    if (file.dir) {
+      continue;
+    }
+    if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
+      // console.log('linting ts file ' + file.name)
+      const content = await file.async('string');
+      const filePath = file.name;
+
+      try {
+        const results = await eslint.lintText(content, { filePath });
+        // console.log(results);
+
+        totalIssues += results[0].errorCount + results[0].warningCount;
+      } catch (error) {
+        console.error(`Error linting ${filePath}:`, error);
+      }
+    }
+  }
+
+  return totalIssues;
+}
+
+
+export async function zip_calculate_correctness_metric(loadedZip: JSZip): Promise<number> {
+  try {
+    // Initailize ESLint
+    // const eslint = new ESLint();
+
+    // Get a list of Typescript files in the ZIP
+    const totalIssues = await getIssuesInZip(loadedZip);
+
+    const lintScore = 1 - Math.min(1, totalIssues / 1000.0);
+    return lintScore;
+  } catch (error) {
+    console.error('Error running ESLint:', error);
+    return 0; // Return 0 in case of an error
+  }
+}
+
+// Takes in a JSZip and returns arr source-based metrics (license, ramp-up, correctness)
+export async function zip_license_ramp_up_metric(loadedZip: JSZip): Promise<number[]> {
+  let license_met = 0;
+  let ramp_up_met = 0;  
+  let correctness_met = 0; 
+  // console.log('a');
+  const readmeFiles: JSZip.JSZipObject[] | null = loadedZip.file(/readme\.md|readme\.markdown/i);
+  if (!readmeFiles) {
+    console.log({'level': 'error', 'message': `No README file found in the zip file.`});
+    return [0, 0, 0];
+  }
+
+  var readmeFile = readmeFiles[0]; // weird to have multiple readmes but need to support for regex search
+
+  
+  // Read the contents of the readme file
+  const readmeContent: string = (await readmeFile.async('text')).toLowerCase();
+  // console.log(readmeContent);
+
+  //CALCULATES THE LICENSE SCORE
+  for(const compatibleLicense of concatLicense) {
+    if(readmeContent.match(compatibleLicense)) {
+      license_met = 1; //License found was compatible 
+      break; // no need to continue searching
+    }
+  }
+
+  //CALCULATES THE RAMPUP SCORE 
+  const wordCount = countWords(readmeContent); //gets the number of words in the README
+  const maxWordCount = 2000; //NEED TO ADJUST THIS NUMBER BASED ON WHAT WE GET FROM DIFFERENT TEST RESULTS
+  ramp_up_met = calculate_ramp_up_metric(wordCount, maxWordCount);
+
+  //CALUCLATES THE CORRECTNESS SCORE
+  correctness_met =  await zip_calculate_correctness_metric(loadedZip);
+  console.log([license_met, ramp_up_met, correctness_met])
+  return([license_met, ramp_up_met, correctness_met]); 
 }

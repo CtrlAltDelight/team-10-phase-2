@@ -1,7 +1,7 @@
 .env
 *.log
 *.txt
-node_modules/**
+# node_modules/**
 .DS_Store
 coverage/**
 __pycache__/**
@@ -16,7 +16,7 @@ amplify/backend/amplify-meta.json
 amplify/backend/.temp
 build/
 dist/
-node_modules/
+# node_modules/
 aws-exports.js
 awsconfiguration.json
 amplifyconfiguration.json

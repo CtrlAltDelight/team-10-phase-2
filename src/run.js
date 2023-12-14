@@ -10,13 +10,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runTests = exports.processUrls = void 0;
+exports.run = exports.runTests = exports.processUrls = void 0;
 const fs = require("fs");
 const license_ramp_up_metric_1 = require("./license_ramp_up_metric");
 const bus_factor_maintainer_metric_1 = require("./bus_factor_maintainer_metric");
 const dotenv = require("dotenv");
 const winston = require("winston");
 const process_1 = require("process");
+const JSZip = require("jszip");
 // Function to process URL_FILE and produce NDJSON output
 function processUrls(urlFile) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -82,7 +83,7 @@ function runTests(file) {
     }
     const coverageText = `${coveragePercentage.toFixed(0)}%`;
     console.log(`${passedTests}/${totalTests} test cases passed. ${coverageText} line coverage achieved.`);
-    logger.log({ 'level': 'info', 'message': 'Running tests...' });
+    console.log({ 'level': 'info', 'message': 'Running tests...' });
 }
 exports.runTests = runTests;
 // Main CLI
@@ -90,10 +91,12 @@ const args = process.argv.slice(2);
 // Load environment variables from .env file
 dotenv.config();
 if (process.env.GITHUB_TOKEN === undefined || process.env.GITHUB_TOKEN === '') {
+    console.log('Please set the GITHUB_TOKEN environment variable.');
     (0, process_1.exit)(1);
 }
 let logFile;
 if (process.env.LOG_FILE === undefined || process.env.LOG_FILE === '') {
+    console.log('Please set the LOG_FILE environment variable.');
     (0, process_1.exit)(1);
 }
 else {
@@ -118,24 +121,52 @@ const logger = winston.createLogger({
     format: winston.format.simple(),
     transports: [
         // default log file
-        new winston.transports.File({ filename: 'run.log', level: logLevel }),
+        new winston.transports.File({ filename: '/tmp/run.log', level: logLevel }),
     ],
 });
 fs.access(logFile, fs.constants.W_OK, (err) => {
     if (err) {
         // If unable to access, log to a default file
-        fs.writeFileSync('run.log', '', { flag: 'w' });
+        fs.writeFileSync('/tmp/run.log', '', { flag: 'w' });
     }
     else {
-        logger.remove(new winston.transports.File({ filename: 'run.log', level: logLevel }));
+        logger.remove(new winston.transports.File({ filename: '/tmp/run.log', level: logLevel }));
         // Clear LOG_FILE, open with write permissions if it doesn't exist
         logger.add(new winston.transports.File({ filename: logFile, level: logLevel }));
         fs.writeFileSync(logFile, '', { flag: 'w' });
     }
 });
 exports.default = logger;
+// console.log(args)
+// gitifyURL(args[0]);
+// exit(0);
 if (args[0] == 'test') {
     runTests('./jest.log.txt');
+}
+else if (args[0] == 'b64') {
+    // console.log(args[1]);
+    console.log({ 'level': 'error', 'message': `No file specified.` });
+    const packageBuf = Buffer.from(args[1], 'base64');
+    const zip = new JSZip();
+    zip.loadAsync(packageBuf)
+        .then(loadZip => {
+        const sourceMetrics = (0, license_ramp_up_metric_1.zip_license_ramp_up_metric)(loadZip);
+        console.log(sourceMetrics);
+    })
+        .catch(error => {
+        console.error(`Error loading zip file: ${error}`);
+    });
+}
+else if (args[0] == 'url') {
+    // let bf_rm_metric_array = await 
+    (0, bus_factor_maintainer_metric_1.bus_factor_maintainer_metric)(args[1])
+        .then(bf_rm_metric_array => {
+        // Use bf_rm_metric_array here
+        console.log(bf_rm_metric_array);
+    })
+        .catch(error => {
+        console.error(`Error: ${error}`);
+    });
 }
 else if (args[0] !== undefined) {
     fs.access(args[0], fs.constants.F_OK, (err) => {
@@ -148,3 +179,24 @@ else if (args[0] !== undefined) {
         }
     });
 }
+function run(args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (args.url) {
+            let urlMetrics = yield (0, bus_factor_maintainer_metric_1.bus_factor_maintainer_metric)(args.url);
+            return urlMetrics;
+        }
+        else if (args.b64) {
+            const packageBuf = Buffer.from(args.b64, 'base64');
+            const zip = new JSZip();
+            zip.loadAsync(packageBuf)
+                .then(loadZip => {
+                const sourceMetrics = (0, license_ramp_up_metric_1.zip_license_ramp_up_metric)(loadZip);
+                return sourceMetrics;
+            })
+                .catch(error => {
+                console.error(`Error loading zip file: ${error}`);
+            });
+        }
+    });
+}
+exports.run = run;

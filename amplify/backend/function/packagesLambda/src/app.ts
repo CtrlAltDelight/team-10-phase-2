@@ -11,6 +11,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import axios from 'axios';
 import JSZip from 'jszip';
+import { bus_factor_maintainer_metric } from './bus_factor_maintainer_metric'
 
 
 AWS.config.update({ region: process.env.TABLE_REGION });
@@ -604,6 +605,13 @@ app.post('/package', async (req: any, res: any) => {
 
     const ContentStore = Content || (URL && packageBuf.toString('base64'));    
     const URLStore = URL || (Content && parsedPackageJSON.repository.url);
+
+    if (URL) {
+        bus_factor_maintainer_metric(URL).then(result => {
+            console.log("url met")
+            console.log(result);
+        });
+    }
 
     const params = {
         Bucket: s3BucketName,
